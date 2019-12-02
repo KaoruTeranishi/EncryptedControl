@@ -52,7 +52,7 @@ class ElGamal:
 		print("Failed to encode.")
 
 	def Decode(self, m, gamma):
-		return (m - self.p) / gamma if m > self.q else m / gamma
+		return (m - self.p) / gamma if m >= self.q else m / gamma
 
 	def Encrypt(self, m):
 		r = getRandomRange(1, self.q)
