@@ -69,7 +69,7 @@ classdef ElGamal
         end
 
         function x = Decode(obj,m,gamma)
-            if m > obj.q
+            if m >= obj.q
                 x = (m-obj.p)/gamma;
             else
                 x = m/gamma;
