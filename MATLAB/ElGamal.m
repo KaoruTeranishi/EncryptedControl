@@ -102,8 +102,8 @@ classdef ElGamal
 end
 
 function p = getSafePrime(bitLength)
-    binMin = bitsll(1,bitLength-1);
-    binMax = bitsll(binMin,1);
+    binMin = 2^(bitLength-1);
+    binMax = binMin*2;
 
     q = randi([binMin,binMax-1]);
     q = bitset(q,1);
