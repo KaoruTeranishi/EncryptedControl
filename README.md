@@ -59,5 +59,4 @@ BSD License 2.0
 # Author
 Kaoru Teranishi
 - E-mail: teranishi (at) uec.ac.jp
-- Profile: [English](https://en.kimilab.tokyo/member/59), [Japanese](https://kimilab.tokyo/member/59)
-- Lab homepage: [English](https://en.kimilab.tokyo/contents/31), [Japanese](https://kimilab.tokyo/contents/103)
+- Profile: [https://kaoruteranishi.xyz](https://kaoruteranishi.xyz)
