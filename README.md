@@ -40,7 +40,7 @@ The original encrypted control system uses RSA or ElGamal encryption.
 
 # Paillier encryption
 [Paillier encryption](https://en.wikipedia.org/wiki/Paillier_cryptosystem), additive homomorphic encryption, allows to execute addition in ciphertext.
-This library employs Farohki et al.'s algorithms.
+This library employs Farokhi et al.'s algorithms.
 
 # Somewhat homomorphic encryption
 Somewhat homomorphic encryption allows to execute limited number of multiplication and addition in ciphertext.
