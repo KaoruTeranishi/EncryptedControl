@@ -16,6 +16,12 @@
 This is Python and MATLAB libraries for encrypted control.
 
 # Requirements
+
+**MATLAB**
+- MATLAB R2019a or higher
+- Control System Toolbox
+
+**Python**
 - Python 3.7.x
 - numpy
 - matplotlib
@@ -25,32 +31,38 @@ This is Python and MATLAB libraries for encrypted control.
 
 # How to use
 1. Clone this repository. `git clone https://github.com/KaoruTeranishi/EncryptedControl.git`
-2. Install the above requirements.
-3. Execute codes in each directory.
+1. Install the requirements.
+1. Execute codes in each directory.
 
 # Encrypted control
 A concept of controller encryption is first proposed by Kiminao Kogiso and Takahiro Fujita in 2015 IEEE 54th Conference on Decision and Control (CDC).
-An encrypted controller decides control inputs from encrypted mesurements and encrypted controller parameters without decryption.
+An encrypted controller directly decides control inputs from encrypted mesurements and encrypted controller parameters without decryption.
 For more details, please see [here](https://en.kimilab.tokyo/contents/31).
 
 # ElGamal encryption
-[ElGamal encryption](https://en.wikipedia.org/wiki/ElGamal_encryption), multiplicative homomorphic encryption, allows to execute multiplication in ciphertext.
-The original encrypted control system uses RSA or ElGamal encryption.
+[ElGamal encryption](https://en.wikipedia.org/wiki/ElGamal_encryption) is multiplicative homomorphic encryption, which allows to compute multiplication in ciphertext.
+
+**References**
+1. T. Elgamal, "A public key cryptosystem and a signature scheme based on discrete logarithms," in CRYPTO, vol. 196, 1984, pp. 10–18.
+1. K. Kogiso and T. Fujita, "Cyber-security enhancement of networked control systems using homomorphic encryption," in IEEE Conference on Decision and Control, 2015, pp. 6836–6843.
+1. K. Teranishi, N. Shimada, and K. Kogiso, "Stability analysis and dynamic quantizer for controller encryption," in IEEE Conference on Decision and Control, 2019, pp. 7184-7189.
+1. K. Teranishi, J. Ueda, and K. Kogiso, "Event-triggered approach to increasing sampling period of encrypted control systems," IFAC World Congress, 2020. (accepted)
+1. K. Teranishi, N. Shimada, and K. Kogiso, "Stability-guaranteed dynamic ElGamal cryptosystem for encrypted control systems," IET Control Theory & Applications. (to appear)
 
 # Paillier encryption
-[Paillier encryption](https://en.wikipedia.org/wiki/Paillier_cryptosystem), additive homomorphic encryption, allows to execute addition in ciphertext.
-This library employs Farokhi et al.'s algorithms.
+[Paillier encryption](https://en.wikipedia.org/wiki/Paillier_cryptosystem) is additive homomorphic encryption, which allows to compute addition in ciphertext.
+
+**References**
+1. P. Paillier, "Public-key cryptosystems based on composite degree residuosity classes," in EUROCRYPT, 1999, pp. 223–238.
+1. F. Farokhi, I. Shames, and N. Batterham, "Secure and private control using semi-homomorphic encryption," Control Engineering Practice, vol. 67, pp. 13–20, 2017.
 
 # Somewhat homomorphic encryption
-Somewhat homomorphic encryption allows to execute limited number of multiplication and addition in ciphertext.
+Somewhat homomorphic encryption allows to compute limited number of multiplication and addition in ciphertext.
 This library employs Dyer et al.'s somewhat homomorphic encrypion.
 
-# References
-1. K. Kogiso and T. Fujita, "Cyber-security enhancement of networked control systems using homomorphic encryption," in IEEE Conference on Decision and Control, 2015, pp. 6836–6843.
-2. F. Farokhi, I. Shames, and N. Batterham, "Secure and private control using semi-homomorphic encryption," Control Engineering Practice, vol. 67, pp. 13–20, 2017.
-3. T. Elgamal, "A public key cryptosystem and a signature scheme based on discrete logarithms," in CRYPTO, vol. 196, 1984, pp. 10–18.
-4. P. Paillier, "Public-key cryptosystems based on composite degree residuosity classes," in EUROCRYPT, 1999, pp. 223–238.
-5. J. Dyer, M. Dyer, and J. Xu, "Practical homomorphic encryption over the integers for secure computation in the cloud," International Journal of Information Security, vol. 18, no. 5, pp. 549-579, 2019.
+**References**
+1. J. Dyer, M. Dyer, and J. Xu, "Practical homomorphic encryption over the integers for secure computation in the cloud," International Journal of Information Security, vol. 18, no. 5, pp. 549-579, 2019.
+1. K. Teranishi, K. Kogiso, and J. Ueda, "Encrypted feedback linearization and motion control for manipulator with somewhat homomorphic encryption," IEEE/ASME International Conference on Advanced Intelligent Mechatronics, 2020. (accepted)
 
 # License
 BSD License 2.0
