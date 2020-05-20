@@ -122,3 +122,8 @@ class ElGamal:
 
 	def isElement(self, m):
 		return True if self.modPow(m, self.q, self.p) == 1 else False
+
+	def dmaxSearch(self):
+			G = [self.modPow(self.g, i, self.p) for i in range(self.q)]
+			G.sort()
+			return max([x - y for (x, y) in zip(G[1:], G[:-1])])
