@@ -26,8 +26,7 @@ This is Python and MATLAB libraries for encrypted control.
 # How to use
 1. Clone this repository. `git clone https://github.com/KaoruTeranishi/EncryptedControl.git`
 2. Install the above requirements.
-3. Make "fig" directories in each directory.
-4. Execute codes in each directory.
+3. Execute codes in each directory.
 
 # Encrypted control
 A concept of controller encryption is first proposed by Kiminao Kogiso and Takahiro Fujita in 2015 IEEE 54th Conference on Decision and Control (CDC).
