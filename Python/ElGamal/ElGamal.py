@@ -127,3 +127,12 @@ class ElGamal:
 			G = [self.modPow(self.g, i, self.p) for i in range(self.q)]
 			G.sort()
 			return max([x - y for (x, y) in zip(G[1:], G[:-1])])
+
+class DynElGamal(ElGamal):
+
+	def KeyUpdate(self, r):
+		self.h = (self.h * self.modPow(self.g, r, self.p)) % self.p
+		self.s = (self.s + r) % self.q
+
+	def cipherTextUpdate(self, c, r):
+		return c[0], (self.modPow(c[0], r, self.p) * c[1]) % self.p
