@@ -104,6 +104,8 @@ plt.rcParams['figure.figsize'] = (1.62 * 3, 1 * 3)
 # font
 del fm.weight_dict['roman']
 matplotlib.font_manager._rebuild()
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 plt.rcParams['font.family'] = 'Times New Roman'
 plt.rcParams['mathtext.fontset'] = 'cm'
 plt.rcParams['font.size'] = 10
