@@ -75,31 +75,31 @@ b = b1 + b2
 # controller encryption
 F_pt = [[0] * n for i in range(m)]
 for i in range(m):
-	for j in range(n):
-		F_pt[i][j] = csys.Encode(F[i,j], a, b, a1, b1)
+    for j in range(n):
+        F_pt[i][j] = csys.Encode(F[i,j], a, b, a1, b1)
 
 # simulation w/o encryption
 for k in range(len(t)):
-	# controller
-	u[k,:] = F @ x[k,:]
-	# plant update
-	x[k+1,:] = A @ x[k,:] + B @ u[k,:]
+    # controller
+    u[k,:] = F @ x[k,:]
+    # plant update
+    x[k+1,:] = A @ x[k,:] + B @ u[k,:]
 
 # simulation w/ encryption
 for k in range(len(t)):
-	# state encryption
-	for i in range(n):
-		x_enc[k][i] = csys.Enc(x_[k,i], a, b, a2, b2)
-	# encrypted controller
-	for i in range(m):
-		u_enc[k][i] = csys.Mult(x_enc[k][0], F_pt[i][0])
-		for j in range(1, n):
-			u_enc[k][i] = csys.Add(u_enc[k][i], csys.Mult(x_enc[k][j], F_pt[i][j]))
-	# input decryption
-	for i in range(m):
-		u_[k,i] = csys.Dec(u_enc[k][i], a, b)
-	# plant update
-	x_[k+1,:] = A @ x_[k,:] + B @ u_[k,:]
+    # state encryption
+    for i in range(n):
+        x_enc[k][i] = csys.Enc(x_[k,i], a, b, a2, b2)
+    # encrypted controller
+    for i in range(m):
+        u_enc[k][i] = csys.Mult(x_enc[k][0], F_pt[i][0])
+        for j in range(1, n):
+            u_enc[k][i] = csys.Add(u_enc[k][i], csys.Mult(x_enc[k][j], F_pt[i][j]))
+    # input decryption
+    for i in range(m):
+        u_[k,i] = csys.Dec(u_enc[k][i], a, b)
+    # plant update
+    x_[k+1,:] = A @ x_[k,:] + B @ u_[k,:]
 
 print("========== PLANT ==========")
 print(f"A = {A}")
@@ -145,14 +145,14 @@ plt.legend(loc='upper right')
 plt.savefig("./fig/enc_state_feedback/state.eps", bbox_inches='tight', pad_inches=0.05, transparent=True)
 
 plt.figure()
-plt.plot(t, u_enc, linestyle='-', color=blue, linewidth=1.0)
+plt.plot(t, [a[0] for a in u_enc], linestyle='-', color=blue, linewidth=1.0)
 plt.xlabel("Time (s)")
 plt.ylabel(r"$\mathsf{Enc}(u)$")
 plt.xlim(0, simulation_time)
 plt.savefig("./fig/enc_state_feedback/enc_input.eps", bbox_inches='tight', pad_inches=0.05, transparent=True)
 
 plt.figure()
-plt.plot(t, x_enc[0:-1], linestyle='-', color=blue, linewidth=1.0)
+plt.plot(t, [a[0] for a in x_enc[0:-1]], linestyle='-', color=blue, linewidth=1.0)
 plt.xlabel("Time (s)")
 plt.ylabel(r"$\mathsf{Enc}(x_1)$")
 plt.xlim(0, simulation_time)
