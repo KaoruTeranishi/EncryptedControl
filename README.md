@@ -22,7 +22,7 @@ This is Python and MATLAB libraries for encrypted control.
 - Control System Toolbox
 
 **Python**
-- Python 3.7.x
+- Python 3.7.8
 - numpy
 - matplotlib
 - python-control
@@ -46,8 +46,8 @@ For more details, please see [here](https://en.kimilab.tokyo/contents/31).
 1. T. Elgamal, "A public key cryptosystem and a signature scheme based on discrete logarithms," in CRYPTO, vol. 196, 1984, pp. 10–18.
 1. K. Kogiso and T. Fujita, "Cyber-security enhancement of networked control systems using homomorphic encryption," in IEEE Conference on Decision and Control, 2015, pp. 6836–6843.
 1. K. Teranishi, N. Shimada, and K. Kogiso, "Stability analysis and dynamic quantizer for controller encryption," in IEEE Conference on Decision and Control, 2019, pp. 7184-7189.
-1. K. Teranishi, J. Ueda, and K. Kogiso, "Event-triggered approach to increasing sampling period of encrypted control systems," IFAC World Congress, 2020. (accepted)
-1. K. Teranishi, N. Shimada, and K. Kogiso, "Stability-guaranteed dynamic ElGamal cryptosystem for encrypted control systems," IET Control Theory & Applications. (to appear)
+1. K. Teranishi, J. Ueda, and K. Kogiso, "Event-triggered approach to increasing sampling period of encrypted control systems," IFAC World Congress, 2020.
+1. K. Teranishi, N. Shimada, and K. Kogiso, "Stability-guaranteed dynamic ElGamal cryptosystem for encrypted control systems," IET Control Theory & Applications. (in press)
 
 # Paillier encryption
 [Paillier encryption](https://en.wikipedia.org/wiki/Paillier_cryptosystem) is additive homomorphic encryption, which allows to compute addition in ciphertext.
@@ -62,7 +62,7 @@ This library employs Dyer et al.'s somewhat homomorphic encrypion.
 
 **References**
 1. J. Dyer, M. Dyer, and J. Xu, "Practical homomorphic encryption over the integers for secure computation in the cloud," International Journal of Information Security, vol. 18, no. 5, pp. 549-579, 2019.
-1. K. Teranishi, K. Kogiso, and J. Ueda, "Encrypted feedback linearization and motion control for manipulator with somewhat homomorphic encryption," IEEE/ASME International Conference on Advanced Intelligent Mechatronics, 2020. (accepted)
+1. K. Teranishi, K. Kogiso, and J. Ueda, "Encrypted feedback linearization and motion control for manipulator with somewhat homomorphic encryption," IEEE/ASME International Conference on Advanced Intelligent Mechatronics, 2020, pp.613-618.
 
 # License
 BSD License 2.0
