@@ -143,7 +143,7 @@ plt.plot(t, np.zeros(len(t)), linestyle='--', color=black, linewidth=0.5)
 plt.xlabel("Time (s)")
 plt.ylabel(r"$u$")
 plt.xlim(0, simulation_time)
-plt.ylim(-3.3, 00.5)
+plt.ylim(-3.3, 0.5)
 plt.legend(loc='lower right')
 plt.savefig("./fig/dynenc_state_feedback/input.eps", bbox_inches='tight', pad_inches=0.05, transparent=True)
 
