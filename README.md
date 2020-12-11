@@ -17,6 +17,8 @@ You can use `pip`.
 
 `pip install eclib`
 
+You may have to install slycot for running example codes.
+
 # Examples
 
 | Filename                               | Encryption      | Controller                     | Description                                                     |
