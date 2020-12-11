@@ -1,6 +1,8 @@
 *.csv
 *.eps
 .DS_Store
+MANIFEST.in
+setup.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
