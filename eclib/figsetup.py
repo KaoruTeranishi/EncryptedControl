@@ -7,11 +7,10 @@ import matplotlib.font_manager as fm
 # size
 plt.rcParams['figure.figsize'] = (1.62 * 2, 1 * 2)
 # font
-del fm.weight_dict['roman']
-matplotlib.font_manager._rebuild()
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
-plt.rcParams['font.family'] = 'Times New Roman'
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman']
 plt.rcParams['mathtext.fontset'] = 'cm'
 plt.rcParams['font.size'] = 10
 plt.rcParams['ytick.labelsize'] = 10
