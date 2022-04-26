@@ -2,6 +2,7 @@
 *.eps
 .DS_Store
 MANIFEST.in
+Pipfile
 requirements.txt
 setup.py
 
