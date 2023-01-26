@@ -34,7 +34,7 @@ print(f'y2 = Dcd(Dec(c2)) = {y2}')
 
 x3 = x1 * x2
 c3 = mult(params, c1, c2)
-y3 = dec(params, sk, c3, delta ** 3)
+y3 = dec(params, sk, c3, delta ** 2)
 
 print(f'x3 = x1 * x2 = {x3}')
 print(f'c3 = Mult(c1, c2) = {c3}')
