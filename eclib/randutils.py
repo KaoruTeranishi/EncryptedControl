@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 
 from secrets import randbelow
+import numpy as np
+from math import floor
 
 # return random number in [min, max)
 def get_rand(min, max):
@@ -9,3 +11,6 @@ def get_rand(min, max):
 # return (bit_length) bits random number
 def get_rand_bits(bit_length):
     return get_rand(pow(2, bit_length - 1), pow(2, bit_length))
+
+def get_int_gaussian(mean, std, dim):
+    return floor(np.random.normal(mean, std, dim) + 0.5)
