@@ -159,7 +159,7 @@ def dec_add(params, sk, c, delta):
     # vector
     elif isinstance(c[0][0], int):
         x = 0
-        for i in range(len(m)):
+        for i in range(len(c)):
             x += dec(params, sk, c[i], delta)
         return x
     # matrix
