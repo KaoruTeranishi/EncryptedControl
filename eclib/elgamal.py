@@ -147,7 +147,7 @@ def decode(params, m, delta):
         return None
 
 def enc(params, pk, x, delta, mode='nearest'):
-    return encrypt(params, pk, encode(params, x, delta))
+    return encrypt(params, pk, encode(params, x, delta, mode))
 
 def dec(params, sk, c, delta):
     return decode(params, decrypt(params, sk, c), delta)
