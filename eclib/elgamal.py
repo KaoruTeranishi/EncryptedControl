@@ -174,30 +174,6 @@ def dec_add(params, sk, c, delta):
         print('error: decryption')
         return None
 
-def update_key(params, pk, sk, r):
-    return (pk * mpow(params.g, r, params.p)) % params.p, (sk + r) % params.q
-
-def update_ctxt(params, c, r):
-    # scalar
-    if isinstance(c[0], int):
-        return _update_ctxt(params, c, r)
-    # vector
-    elif isinstance(c[0][0], int):
-        c_ = [[0, 0] for i in range(len(c))]
-        for i in range(len(c)):
-            c_[i] = _update_ctxt(params, c[i], r)
-        return c_
-    # matrix
-    elif isinstance(c[0][0][0], int):
-        c_ = [[[0, 0] for j in range(len(c[0]))] for i in range(len(c))]
-        for i in range(len(c)):
-            for j in range(len(c[0])):
-                c_[i][j] = _update_ctxt(params, c[i][j], r)
-        return c_
-    else:
-        print('error: update ciphertext')
-        return None
-
 def _encrypt(params, pk, m):
     r = get_rand(1, params.q)
     return [mpow(params.g, r, params.p), (m * mpow(pk, r, params.p)) % params.p]
@@ -285,6 +261,3 @@ def _encode(params, x, delta, mode):
 
 def _decode(params, m, delta):
     return (m - params.p) * delta if m > params.q else m * delta
-
-def _update_ctxt(params, c, r):
-    return [c[0], (mpow(c[0], r, params.p) * c[1]) % params.p]
