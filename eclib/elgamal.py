@@ -122,7 +122,7 @@ def encode(params, x, delta, mode='nearest'):
                 m[i][j] = _encode(params, x[i][j], delta, mode)
         return m
     else:
-        print('error: encoding!')
+        print('error: encoding')
         return None
 
 def decode(params, m, delta):
