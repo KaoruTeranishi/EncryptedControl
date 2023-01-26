@@ -161,7 +161,7 @@ def dec_add(params, sk, c, delta):
         x = 0
         for i in range(len(m)):
             x += dec(params, sk, c[i], delta)
-        return m
+        return x
     # matrix
     elif isinstance(c[0][0][0], int):
         x = [0 for i in range(len(c))]
