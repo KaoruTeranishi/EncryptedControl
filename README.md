@@ -10,6 +10,12 @@ Cybersecurity is a critical issue of networked control systems in a modern socie
 Encrypted control is a novel concept of control using cryptographic tools for secure computation, such as homomorphic encryption and secret sharing.
 ECLib helps researchers and students to implement their new idea of encrypted control using homomorphic encryption.
 
+# Supported encryption schemes
+- ElGamal
+- Dynamic-key ElGamal
+- Paillier
+- Regev (LWE)
+
 # Installation
 
 Run pip command on your terminal.
