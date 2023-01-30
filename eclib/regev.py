@@ -6,13 +6,13 @@ from eclib.primeutils import *
 from eclib.modutils import *
 from collections import namedtuple
 import numpy as np
-from math import floor
+from math import floor, log2
 
-def keygen(bit_length, n, m, sigma):
+def keygen(bit_length, n, sigma):
     params = namedtuple('Parameters', ['q', 'n', 'm', 'sigma'])
     params.q = get_prime(bit_length)
     params.n = n
-    params.m = m
+    params.m = params.n * (floor(log2(params.q)) + 1)
     params.sigma = sigma
 
     A = np.array([[get_rand(0, params.q) for _ in range(params.m)] for _ in range(params.n)], dtype=object)
