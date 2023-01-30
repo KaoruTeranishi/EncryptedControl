@@ -15,6 +15,7 @@ ECLib helps researchers and students to implement their new idea of encrypted co
 - Dynamic-key ElGamal
 - Paillier
 - Regev (LWE)
+- GSW-LWE
 
 # Installation
 
