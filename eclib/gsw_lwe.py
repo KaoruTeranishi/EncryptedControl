@@ -311,11 +311,11 @@ def _decrypt(params, sk, c):
 def _add(params, c1, c2):
     return (c1 + c2) % params.q
 
-def _int_mult(params, m, c):
-    return (m * c) % params.q
-
 def _mult(params, c1, c2):
     return (c1 @ _bitdecomp(params, c2)) % params.q
+
+def _int_mult(params, m, c):
+    return (m * c) % params.q
 
 def _encode(params, x, delta):
     m = floor(x / delta + 0.5)
