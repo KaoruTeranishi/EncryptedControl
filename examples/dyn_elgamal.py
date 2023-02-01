@@ -1,4 +1,4 @@
-from eclib.elgamal import *
+from eclib.dyn_elgamal import *
 import numpy as np
 
 bit_length = 64
@@ -18,11 +18,18 @@ pt_v1 = encode(params, v1, delta)
 pt_m1 = encode(params, m1, delta)
 
 ct_x1 = enc(params, pk, x1, delta)
-ct_x2 = enc(params, pk, x2, delta)
 ct_v1 = enc(params, pk, v1, delta)
-ct_v2 = enc(params, pk, v2, delta)
 ct_m1 = enc(params, pk, m1, delta)
+
+pk, sk, token = update_key(params, pk, sk)
+
+ct_x2 = enc(params, pk, x2, delta)
+ct_v2 = enc(params, pk, v2, delta)
 ct_m2 = enc(params, pk, m2, delta)
+
+ct_x1 = update_ct(params, ct_x1, token)
+ct_v1 = update_ct(params, ct_v1, token)
+ct_m1 = update_ct(params, ct_m1, token)
 
 print('')
 print('multiplication')
