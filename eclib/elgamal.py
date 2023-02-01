@@ -66,13 +66,13 @@ def mult(params, c1, c2):
     if isinstance(c1[0], int) and isinstance(c2[0], int):
         return _mult(params, c1, c2)
     # scalar x vector
-    if isinstance(c1[0], int) and isinstance(c2[0][0], int):
+    elif isinstance(c1[0], int) and isinstance(c2[0][0], int):
         c = np.zeros(c2.shape, dtype=object)
         for i in range(c.shape[0]):
             c[i] = _mult(params, c1, c2[i])
         return c
     # scalar x matrix
-    if isinstance(c1[0], int) and isinstance(c2[0][0][0], int):
+    elif isinstance(c1[0], int) and isinstance(c2[0][0][0], int):
         c = np.zeros(c2.shape, dtype=object)
         for i in range(c.shape[0]):
             for j in range(c.shape[1]):
@@ -122,18 +122,17 @@ def dec_add(params, sk, c, delta):
         return dec(params, sk, c, delta)
     # vector
     elif isinstance(c[0][0], int):
-        x = 0
-        for i in range(c.shape[0]):
-            x += dec(params, sk, c[i], delta)
-        return x
+        x = dec(params, sk, c, delta)
+        for i in range(1, x.shape[0]):
+            x[0] += x[i]
+        return x[0]
     # matrix
     elif isinstance(c[0][0][0], int):
-        x = np.zeros(c.shape[0], dtype=object)
-        for i in range(c.shape[1]):
-            x[i] = dec(params, sk, c[i][0], delta)
-            for j in range(1, c.shape[0]):
-                x[i] += dec(params, sk, c[i][j], delta)
-        return x
+        x = dec(params, sk, c, delta)
+        for i in range(x.shape[0]):
+            for j in range(1, x.shape[1]):
+                x[i][0] += x[i][j]
+        return x[:,0]
     else:
         print('error: decryption with addition')
         return None
