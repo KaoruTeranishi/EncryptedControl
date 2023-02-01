@@ -25,13 +25,13 @@ def encrypt(params, pk, m):
         return _encrypt(params, pk, m)
     # vector
     elif isinstance(m[0], int):
-        c = [[0, 0] for i in range(len(m))]
+        c = [[0, 0] for _ in range(len(m))]
         for i in range(len(c)):
             c[i] = _encrypt(params, pk, m[i])
         return c
     # matrix
     elif isinstance(m[0][0], int):
-        c = [[[0, 0] for j in range(len(m[0]))] for i in range(len(m))]
+        c = [[[0, 0] for _ in range(len(m[0]))] for _ in range(len(m))]
         for i in range(len(c)):
             for j in range(len(c[0])):
                 c[i][j] = _encrypt(params, pk, m[i][j])
@@ -46,13 +46,13 @@ def decrypt(params, sk, c):
         return _decrypt(params, sk, c)
     # vector
     elif isinstance(c[0][0], int):
-        m = [0 for i in range(len(c))]
+        m = [0 for _ in range(len(c))]
         for i in range(len(m)):
             m[i] = _decrypt(params, sk, c[i])
         return m
     # matrix
     elif isinstance(c[0][0][0], int):
-        m = [[0 for j in range(len(c[0]))] for i in range(len(c))]
+        m = [[0 for _ in range(len(c[0]))] for _ in range(len(c))]
         for i in range(len(m)):
             for j in range(len(m[0])):
                 m[i][j] = _decrypt(params, sk, c[i][j])
@@ -73,27 +73,27 @@ def mult(params, c1, c2):
         return c
     # scalar x matrix
     if isinstance(c1[0], int) and isinstance(c2[0][0][0], int):
-        c = [[[0, 0] for j in range(len(c2[0]))] for i in range(len(c2))]
+        c = [[[0, 0] for _ in range(len(c2[0]))] for _ in range(len(c2))]
         for i in range(len(c)):
             for j in range(len(c[0])):
                 c[i][j] = _mult(params, c1, c2[i][j])
         return c
     # vector x vector
     elif isinstance(c1[0][0], int) and isinstance(c2[0][0], int) and len(c1) == len(c2):
-        c = [[0, 0] for i in range(len(c1))]
+        c = [[0, 0] for _ in range(len(c1))]
         for i in range(len(c)):
             c[i] = _mult(params, c1[i], c2[i])
         return c
     # matrix x vector
     elif isinstance(c1[0][0][0], int) and isinstance(c2[0][0], int) and len(c1[0]) == len(c2):
-        c = [[[0, 0] for j in range(len(c1[0]))] for i in range(len(c1))]
+        c = [[[0, 0] for _ in range(len(c1[0]))] for _ in range(len(c1))]
         for i in range(len(c)):
             for j in range(len(c[0])):
                 c[i][j] = _mult(params, c1[i][j], c2[j])
         return c
     # matrix x matrix
     elif isinstance(c1[0][0][0], int) and isinstance(c2[0][0][0], int) and len(c1) == len(c2) and len(c1[0]) == len(c2[0]):
-        c = [[[0, 0] for j in range(len(c1[0]))] for i in range(len(c1))]
+        c = [[[0, 0] for _ in range(len(c1[0]))] for _ in range(len(c1))]
         for i in range(len(c)):
             for j in range(len(c[0])):
                 c[i][j] = _mult(params, c1[i][j], c2[i][j])
@@ -110,13 +110,13 @@ def encode(params, x, delta, mode='nearest'):
         return _encode(params, x, delta, mode)
     # vector
     elif isinstance(x[0], float) or isinstance(x[0], int):
-        m = [0 for i in range(len(x))]
+        m = [0 for _ in range(len(x))]
         for i in range(len(m)):
             m[i] = _encode(params, x[i], delta, mode)
         return m
     # matrix
     elif isinstance(x[0][0], float) or isinstance(x[0][0], int):
-        m = [[0 for j in range(len(x[0]))] for i in range(len(x))]
+        m = [[0 for _ in range(len(x[0]))] for _ in range(len(x))]
         for i in range(len(m)):
             for j in range(len(m[0])):
                 m[i][j] = _encode(params, x[i][j], delta, mode)
@@ -131,13 +131,13 @@ def decode(params, m, delta):
         return _decode(params, m, delta)
     # vector
     elif isinstance(m[0], int):
-        x = [0 for i in range(len(m))]
+        x = [0 for _ in range(len(m))]
         for i in range(len(x)):
             x[i] = _decode(params, m[i], delta)
         return x
     # matrix
     elif isinstance(m[0][0], int):
-        x = [[0 for j in range(len(m[0]))] for i in range(len(m))]
+        x = [[0 for _ in range(len(m[0]))] for _ in range(len(m))]
         for i in range(len(x)):
             for j in range(len(x[0])):
                 x[i][j] = _decode(params, m[i][j], delta)
@@ -164,7 +164,7 @@ def dec_add(params, sk, c, delta):
         return x
     # matrix
     elif isinstance(c[0][0][0], int):
-        x = [0 for i in range(len(c))]
+        x = [0 for _ in range(len(c))]
         for i in range(len(c)):
             x[i] = dec(params, sk, c[i][0], delta)
             for j in range(1, len(c[0])):

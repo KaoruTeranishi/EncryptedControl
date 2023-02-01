@@ -44,13 +44,13 @@ def update_ct(params, c, token):
         return _update_ct(params, c, token)
     # vector
     elif isinstance(c[0][0], int):
-        c_ = [[0, 0] for i in range(len(c))]
+        c_ = [[0, 0] for _ in range(len(c))]
         for i in range(len(c)):
             c_[i] = _update_ct(params, c[i], token)
         return c_
     # matrix
     elif isinstance(c[0][0][0], int):
-        c_ = [[[0, 0] for j in range(len(c[0]))] for i in range(len(c))]
+        c_ = [[[0, 0] for _ in range(len(c[0]))] for _ in range(len(c))]
         for i in range(len(c)):
             for j in range(len(c[0])):
                 c_[i][j] = _update_ct(params, c[i][j], token)

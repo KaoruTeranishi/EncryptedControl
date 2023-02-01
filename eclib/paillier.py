@@ -35,13 +35,13 @@ def encrypt(params, pk, m):
         return _encrypt(params, pk, m)
     # vector
     elif isinstance(m[0], int):
-        c = [1 for i in range(len(m))]
+        c = [1 for _ in range(len(m))]
         for i in range(len(c)):
             c[i] = _encrypt(params, pk, m[i])
         return c
     # matrix
     elif isinstance(m[0][0], int):
-        c = [[1 for j in range(len(m[0]))] for i in range(len(m))]
+        c = [[1 for _ in range(len(m[0]))] for _ in range(len(m))]
         for i in range(len(c)):
             for j in range(len(c[0])):
                 c[i][j] = _encrypt(params, pk, m[i][j])
@@ -56,13 +56,13 @@ def decrypt(params, sk, c):
         return _decrypt(params, sk, c)
     # vector
     elif isinstance(c[0], int):
-        m = [0 for i in range(len(c))]
+        m = [0 for _ in range(len(c))]
         for i in range(len(m)):
             m[i] = _decrypt(params, sk, c[i])
         return m
     # matrix
     elif isinstance(c[0][0], int):
-        m = [[0 for j in range(len(c[0]))] for i in range(len(c))]
+        m = [[0 for _ in range(len(c[0]))] for _ in range(len(c))]
         for i in range(len(m)):
             for j in range(len(m[0])):
                 m[i][j] = _decrypt(params, sk, c[i][j])
@@ -77,13 +77,13 @@ def add(params, c1, c2):
         return _add(params, c1, c2)
     # vector + vector
     elif isinstance(c1[0], int) and isinstance(c2[0], int) and len(c1) == len(c2):
-        c = [1 for i in range(len(c1))]
+        c = [1 for _ in range(len(c1))]
         for i in range(len(c)):
             c[i] = _add(params, c1[i], c2[i])
         return c
     # matrix + matrix
     elif isinstance(c1[0][0], int) and isinstance(c2[0][0], int) and len(c1) == len(c2) and len(c1[0]) == len(c2[0]):
-        c = [[1 for j in range(len(c1[0]))] for i in range(len(c1))]
+        c = [[1 for _ in range(len(c1[0]))] for _ in range(len(c1))]
         for i in range(len(c)):
             for j in range(len(c[0])):
                 c[i][j] = _add(params, c1[i][j], c2[i][j])
@@ -101,7 +101,7 @@ def elementwise_add(params, c1, c2):
         return add(params, c1, c2)
     # matrix + vector
     elif isinstance(c1[0][0], int) and isinstance(c2[0], int) and len(c1[0]) == len(c2):
-        c = [[1 for j in range(len(c1[0]))] for i in range(len(c1))]
+        c = [[1 for _ in range(len(c1[0]))] for _ in range(len(c1))]
         for i in range(len(c)):
             for j in range(len(c[0])):
                 c[i][j] = _add(params, c1[i][j], c2[j])
@@ -113,74 +113,80 @@ def elementwise_add(params, c1, c2):
         print('error: elementwise addtion')
         return None
 
-def elementwise_mult(params, m, c):
+def int_mult(params, m, c):
     # scalar (plaintext) x scalar (ciphertext)
     if isinstance(m, int) and isinstance(c, int):
-        return _mult(params, m, c)
-    # vector (plaintext) x vector (ciphertext)
-    elif isinstance(m[0], int) and isinstance(c[0], int) and len(m) == len(c):
-        c_ = [1 for i in range(len(m))]
-        for i in range(len(c_)):
-            c_[i] = _mult(params, m[i], c[i])
-        return c_
-    # matrix (plaintext) x vector (ciphertext)
-    elif isinstance(m[0][0], int) and isinstance(c[0], int) and len(m[0]) == len(c):
-        c_ = [[1 for j in range(len(m[0]))] for i in range(len(m))]
-        for i in range(len(c_)):
-            for j in range(len(c_[0])):
-                c_[i][j] = _mult(params, m[i][j], c[j])
-        return c_
-    # matrix (plaintext) x matrix (ciphertext)
-    elif isinstance(m[0][0], int) and isinstance(c[0][0], int) and len(m) == len(c) and len(m[0]) == len(c[0]):
-        c_ = [[1 for j in range(len(m[0]))] for i in range(len(m))]
-        for i in range(len(c_)):
-            for j in range(len(c_[0])):
-                c_[i][j] = _mult(params, m[i][j], c[i][j])
-        return c_
-    else:
-        print('error: elementwise multiplication')
-        return None
-
-def mult(params, m, c):
-    # scalar (plaintext) x scalar (ciphertext)
-    if isinstance(m, int) and isinstance(c, int):
-        return _mult(params, m, c)
+        return _int_mult(params, m, c)
     # scalar (plaintext) x vector (ciphertext)
     elif isinstance(m, int) and isinstance(c[0], int):
-        c_ = [1 for i in range(len(c))]
+        c_ = [1 for _ in range(len(c))]
         for i in range(len(c)):
-            c_[i] = _mult(params, m, c[i])
+            c_[i] = _int_mult(params, m, c[i])
         return c_
     # scalar (plaintext) x matrix (ciphertext)
     elif isinstance(m, int) and isinstance(c[0][0], int):
-        c_ = [[1 for j in range(len(c[0]))] for i in range(len(c))]
+        c_ = [[1 for _ in range(len(c[0]))] for _ in range(len(c))]
         for i in range(len(c)):
             for j in range(len(c[0])):
-                c_[i][j] = _mult(params, m, c[i][j])
+                c_[i][j] = _int_mult(params, m, c[i][j])
         return c_
     # vector (plaintext) x vector (ciphertext)
     elif isinstance(m[0], int) and isinstance(c[0], int) and len(m) == len(c):
         c_ = 1
         for i in range(len(m)):
-            c_ = _add(params, c_, _mult(params, m[i], c[i]))
+            c_ = _add(params, c_, _int_mult(params, m[i], c[i]))
         return c_
     # matrix (plaintext) x vector (ciphertext)
     elif isinstance(m[0][0], int) and isinstance(c[0], int) and len(m[0]) == len(c):
-        c_ = [1 for i in range(len(m))]
+        c_ = [1 for _ in range(len(m))]
         for i in range(len(m)):
             for j in range(len(c)):
-                c_[i] = _add(params, c_[i], _mult(params, m[i][j], c[j]))
+                c_[i] = _add(params, c_[i], _int_mult(params, m[i][j], c[j]))
         return c_
     # matrix (plaintext) x matrix (ciphertext)
     elif isinstance(m[0][0], int) and isinstance(c[0][0], int) and len(m[0]) == len(c):
-        c_ = [[1 for j in range(len(c[0]))] for i in range(len(m))]
+        c_ = [[1 for _ in range(len(c[0]))] for _ in range(len(m))]
         for i in range(len(m)):
             for j in range(len(c[0])):
                 for k in range(len(m[0])):
-                    c_[i][j] = _add(params, c_[i][j], _mult(params, m[i][k], c[k][j]))
+                    c_[i][j] = _add(params, c_[i][j], _int_mult(params, m[i][k], c[k][j]))
         return c_
     else:
-        print('error: multiplication')
+        print('error: integer multiplication')
+        return None
+
+def elementwise_int_mult(params, m, c):
+    # scalar (plaintext) x scalar (ciphertext)
+    if isinstance(m, int) and isinstance(c, int):
+        return int_mult(params, m, c)
+    # scalar (plaintext) x vector (ciphertext)
+    elif isinstance(m, int) and isinstance(c[0], int):
+        return int_mult(params, m, c)
+    # scalar (plaintext) x matrix (ciphertext)
+    elif isinstance(m, int) and isinstance(c[0][0], int):
+        return int_mult(params, m, c)
+    # vector (plaintext) x vector (ciphertext)
+    elif isinstance(m[0], int) and isinstance(c[0], int) and len(m) == len(c):
+        c_ = [1 for _ in range(len(m))]
+        for i in range(len(c_)):
+            c_[i] = _int_mult(params, m[i], c[i])
+        return c_
+    # matrix (plaintext) x vector (ciphertext)
+    elif isinstance(m[0][0], int) and isinstance(c[0], int) and len(m[0]) == len(c):
+        c_ = [[1 for _ in range(len(m[0]))] for _ in range(len(m))]
+        for i in range(len(c_)):
+            for j in range(len(c_[0])):
+                c_[i][j] = _int_mult(params, m[i][j], c[j])
+        return c_
+    # matrix (plaintext) x matrix (ciphertext)
+    elif isinstance(m[0][0], int) and isinstance(c[0][0], int) and len(m) == len(c) and len(m[0]) == len(c[0]):
+        c_ = [[1 for _ in range(len(m[0]))] for _ in range(len(m))]
+        for i in range(len(c_)):
+            for j in range(len(c_[0])):
+                c_[i][j] = _int_mult(params, m[i][j], c[i][j])
+        return c_
+    else:
+        print('error: elementwise integer multiplication')
         return None
 
 def encode(x, a, b, a_, b_):
@@ -272,7 +278,7 @@ def _decrypt(params, sk, c):
 def _add(params, c1, c2):
     return (c1 * c2) % params.n_square
 
-def _mult(params, m, c):
+def _int_mult(params, m, c):
     return mpow(c, m, params.n_square)
 
 def _encode(x, a, b, a_, b_):
