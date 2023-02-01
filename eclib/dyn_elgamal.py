@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-import elgamal
-from randutils import *
-from modutils import *
+from eclib import elgamal
+from eclib.randutils import *
+from eclib.modutils import *
 from collections import namedtuple
 
 def keygen(bit_length):

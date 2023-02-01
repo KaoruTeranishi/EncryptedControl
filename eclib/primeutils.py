@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from randutils import *
+from eclib.randutils import *
 
 # Miller–Rabin primality test
 def is_prime(n, k=50):

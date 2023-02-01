@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from modutils import *
+from eclib.modutils import *
 from math import gcd
 
 def lcm(a, b):

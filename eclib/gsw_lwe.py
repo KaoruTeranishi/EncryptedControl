@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 
-import regev, gsw
-from numutils import *
-from randutils import *
-from primeutils import *
-from modutils import *
+from eclib import regev, gsw
+from eclib.numutils import *
+from eclib.randutils import *
+from eclib.primeutils import *
+from eclib.modutils import *
 
 def keygen(n, q, sigma, m=None):
     if m == None:
