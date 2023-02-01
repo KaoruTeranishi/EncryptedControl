@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-import eclib.elgamal as elgamal
-from eclib.randutils import *
-from eclib.modutils import *
+import elgamal
+from randutils import *
+from modutils import *
 from collections import namedtuple
 
 def keygen(bit_length):
@@ -38,28 +38,28 @@ def update_key(params, pk, sk):
     t.h = pk
     return (pk * mpow(params.g, t.s, params.p)) % params.p, (sk + t.s) % params.q, t
 
-def update_ctxt(params, c, token):
+def update_ct(params, c, token):
     # scalar
     if isinstance(c[0], int):
-        return _update_ctxt(params, c, token)
+        return _update_ct(params, c, token)
     # vector
     elif isinstance(c[0][0], int):
         c_ = [[0, 0] for i in range(len(c))]
         for i in range(len(c)):
-            c_[i] = _update_ctxt(params, c[i], token)
+            c_[i] = _update_ct(params, c[i], token)
         return c_
     # matrix
     elif isinstance(c[0][0][0], int):
         c_ = [[[0, 0] for j in range(len(c[0]))] for i in range(len(c))]
         for i in range(len(c)):
             for j in range(len(c[0])):
-                c_[i][j] = _update_ctxt(params, c[i][j], token)
+                c_[i][j] = _update_ct(params, c[i][j], token)
         return c_
     else:
         print('error: update ciphertext')
         return None
 
-def _update_ctxt(params, c, t):
+def _update_ct(params, c, t):
     r = get_rand(1, params.q)
     tmp = (c[0] * mpow(params.g, r, params.p)) % params.p
     return [tmp, (mpow(tmp, t.s, params.p) * c[1] * mpow(t.h, r, params.p)) % params.p]
