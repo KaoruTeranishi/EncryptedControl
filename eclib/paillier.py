@@ -35,15 +35,13 @@ def encrypt(params, pk, m):
         return _encrypt(params, pk, m)
     # vector
     elif isinstance(m[0], int):
-        # c = [1 for _ in range(len(m))]
-        c = np.zeros(m.shape, dtype=object)
+        c = np.ones(m.shape, dtype=object)
         for i in range(c.shape[0]):
             c[i] = _encrypt(params, pk, m[i])
         return c
     # matrix
     elif isinstance(m[0][0], int):
-        # c = [[1 for _ in range(len(m[0]))] for _ in range(len(m))]
-        c = np.zeros(m.shape, dtype=object)
+        c = np.ones(m.shape, dtype=object)
         for i in range(c.shape[0]):
             for j in range(c.shape[1]):
                 c[i][j] = _encrypt(params, pk, m[i][j])

@@ -119,38 +119,38 @@ def mult(params, c1, c2):
         return _mult(params, c1, c2)
     # scalar x vector
     elif isinstance(c1[0][0], int) and isinstance(c2[0][0][0], int):
-        c_ = np.zeros(c2.shape, dtype=object)
-        for i in range(c_.shape[0]):
-            c_[i] = _mult(params, c1, c2[i])
-        return c_
+        c = np.zeros(c2.shape, dtype=object)
+        for i in range(c.shape[0]):
+            c[i] = _mult(params, c1, c2[i])
+        return c
     # scalar x matrix
     elif isinstance(c1[0][0], int) and isinstance(c2[0][0][0][0], int):
-        c_ = np.zeros(c2.shape, dtype=object)
-        for i in range(c_.shape[0]):
-            for j in range(c_.shape[1]):
-                c_[i][j] = _mult(params, c1, c2[i][j])
-        return c_
+        c = np.zeros(c2.shape, dtype=object)
+        for i in range(c.shape[0]):
+            for j in range(c.shape[1]):
+                c[i][j] = _mult(params, c1, c2[i][j])
+        return c
     # vector x vector
     elif isinstance(c1[0][0][0], int) and isinstance(c2[0][0][0], int) and c1.shape == c2.shape:
-        c_ = np.zeros(1, dtype=object)
+        c = np.zeros(1, dtype=object)
         for i in range(c1.shape[0]):
-            c_ = _add(params, c_, _mult(params, c1[i], c2[i]))
-        return c_
+            c = _add(params, c, _mult(params, c1[i], c2[i]))
+        return c
     # matrix x vector
     elif isinstance(c1[0][0][0][0], int) and isinstance(c2[0][0][0], int) and c1.shape[1] == c2.shape[0]:
-        c_ = np.zeros(c1.shape[0], dtype=object)
+        c = np.zeros(c1.shape[0], dtype=object)
         for i in range(c1.shape[0]):
             for j in range(c1.shape[1]):
-                c_[i] = _add(params, c_[i], _mult(params, c1[i][j], c2[j]))
-        return c_
+                c[i] = _add(params, c[i], _mult(params, c1[i][j], c2[j]))
+        return c
     # matrix x matrix
     elif isinstance(c1[0][0][0][0], int) and isinstance(c2[0][0][0][0], int) and c1.shape[1] == c2.shape[0]:
-        c_ = np.zeros([c1.shape[0], c2.shape[1]], dtype=object)
+        c = np.zeros([c1.shape[0], c2.shape[1]], dtype=object)
         for i in range(c1.shape[0]):
             for j in range(c2.shape[1]):
                 for k in range(c1.shape[1]):
-                    c_[i][j] = _add(params, c_[i][j], _mult(params, c1[i][k], c2[k][j]))
-        return c_
+                    c[i][j] = _add(params, c[i][j], _mult(params, c1[i][k], c2[k][j]))
+        return c
     else:
         print('error: multiplication')
         return None
@@ -167,24 +167,24 @@ def elementwise_mult(params, c1, c2):
         return mult(params, c1, c2)
     # vector x vector
     elif isinstance(c1[0][0][0], int) and isinstance(c2[0][0][0], int) and c1.shape == c2.shape:
-        c_ = np.zeros(c1.shape, dtype=object)
-        for i in range(c_.shape[0]):
-            c_[i] = _mult(params, c1[i], c2[i])
-        return c_
+        c = np.zeros(c1.shape, dtype=object)
+        for i in range(c.shape[0]):
+            c[i] = _mult(params, c1[i], c2[i])
+        return c
     # matrix x vector
     elif isinstance(c1[0][0][0][0], int) and isinstance(c2[0][0][0], int) and c1.shape[1] == c2.shape[0]:
-        c_ = np.zeros(c1.shape, dtype=object)
-        for i in range(c_.shape[0]):
-            for j in range(c_.shape[1]):
-                c_[i][j] = _mult(params, c1[i][j], c2[j])
-        return c_
+        c = np.zeros(c1.shape, dtype=object)
+        for i in range(c.shape[0]):
+            for j in range(c.shape[1]):
+                c[i][j] = _mult(params, c1[i][j], c2[j])
+        return c
     # matrix x matrix
     elif isinstance(c1[0][0][0][0], int) and isinstance(c2[0][0][0][0], int) and c1.shape == c2.shape:
-        c_ = np.zeros(c1.shape, dtype=object)
-        for i in range(c_.shape[0]):
-            for j in range(c_.shape[1]):
-                c_[i][j] = _mult(params, c1[i][j], c2[i][j])
-        return c_
+        c = np.zeros(c1.shape, dtype=object)
+        for i in range(c.shape[0]):
+            for j in range(c.shape[1]):
+                c[i][j] = _mult(params, c1[i][j], c2[i][j])
+        return c
     else:
         print('error: elementwise multiplication')
         return None

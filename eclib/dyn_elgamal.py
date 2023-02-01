@@ -44,15 +44,15 @@ def update_ct(params, c, token):
         return _update_ct(params, c, token)
     # vector
     elif isinstance(c[0][0], int):
-        c_ = [[0, 0] for _ in range(len(c))]
-        for i in range(len(c)):
+        c_ = np.zeros(c.shape, dtype=object)
+        for i in range(c_.shape[0]):
             c_[i] = _update_ct(params, c[i], token)
         return c_
     # matrix
     elif isinstance(c[0][0][0], int):
-        c_ = [[[0, 0] for _ in range(len(c[0]))] for _ in range(len(c))]
-        for i in range(len(c)):
-            for j in range(len(c[0])):
+        c_ = np.zeros(c.shape, dtype=object)
+        for i in range(c_.shape[0]):
+            for j in range(c_.shape[1]):
                 c_[i][j] = _update_ct(params, c[i][j], token)
         return c_
     else:
@@ -62,4 +62,4 @@ def update_ct(params, c, token):
 def _update_ct(params, c, t):
     r = get_rand(1, params.q)
     tmp = (c[0] * mpow(params.g, r, params.p)) % params.p
-    return [tmp, (mpow(tmp, t.s, params.p) * c[1] * mpow(t.h, r, params.p)) % params.p]
+    return np.array([tmp, (mpow(tmp, t.s, params.p) * c[1] * mpow(t.h, r, params.p)) % params.p], dtype=object)

@@ -25,15 +25,15 @@ def encrypt(params, pk, m):
         return _encrypt(params, pk, m)
     # vector
     elif isinstance(m[0], int):
-        c = [[0, 0] for _ in range(len(m))]
-        for i in range(len(c)):
+        c = np.zeros(m.shape, dtype=object)
+        for i in range(c.shape[0]):
             c[i] = _encrypt(params, pk, m[i])
         return c
     # matrix
     elif isinstance(m[0][0], int):
-        c = [[[0, 0] for _ in range(len(m[0]))] for _ in range(len(m))]
-        for i in range(len(c)):
-            for j in range(len(c[0])):
+        c = np.zeros(m.shape, dtype=object)
+        for i in range(c.shape[0]):
+            for j in range(c.shape[1]):
                 c[i][j] = _encrypt(params, pk, m[i][j])
         return c
     else:
@@ -46,15 +46,15 @@ def decrypt(params, sk, c):
         return _decrypt(params, sk, c)
     # vector
     elif isinstance(c[0][0], int):
-        m = [0 for _ in range(len(c))]
-        for i in range(len(m)):
+        m = np.zeros(c.shape, dtype=object)
+        for i in range(m.shape[0]):
             m[i] = _decrypt(params, sk, c[i])
         return m
     # matrix
     elif isinstance(c[0][0][0], int):
-        m = [[0 for _ in range(len(c[0]))] for _ in range(len(c))]
-        for i in range(len(m)):
-            for j in range(len(m[0])):
+        m = np.zeros(c.shape, dtype=object)
+        for i in range(m.shape[0]):
+            for j in range(m.shape[1]):
                 m[i][j] = _decrypt(params, sk, c[i][j])
         return m
     else:
@@ -67,35 +67,35 @@ def mult(params, c1, c2):
         return _mult(params, c1, c2)
     # scalar x vector
     if isinstance(c1[0], int) and isinstance(c2[0][0], int):
-        c = [[0, 0] for i in range(len(c2))]
-        for i in range(len(c)):
+        c = np.zeros(c2.shape, dtype=object)
+        for i in range(c.shape[0]):
             c[i] = _mult(params, c1, c2[i])
         return c
     # scalar x matrix
     if isinstance(c1[0], int) and isinstance(c2[0][0][0], int):
-        c = [[[0, 0] for _ in range(len(c2[0]))] for _ in range(len(c2))]
-        for i in range(len(c)):
-            for j in range(len(c[0])):
+        c = np.zeros(c2.shape, dtype=object)
+        for i in range(c.shape[0]):
+            for j in range(c.shape[1]):
                 c[i][j] = _mult(params, c1, c2[i][j])
         return c
     # vector x vector
-    elif isinstance(c1[0][0], int) and isinstance(c2[0][0], int) and len(c1) == len(c2):
-        c = [[0, 0] for _ in range(len(c1))]
-        for i in range(len(c)):
+    elif isinstance(c1[0][0], int) and isinstance(c2[0][0], int) and c1.shape == c2.shape:
+        c = np.zeros(c1.shape, dtype=object)
+        for i in range(c1.shape[0]):
             c[i] = _mult(params, c1[i], c2[i])
         return c
     # matrix x vector
-    elif isinstance(c1[0][0][0], int) and isinstance(c2[0][0], int) and len(c1[0]) == len(c2):
-        c = [[[0, 0] for _ in range(len(c1[0]))] for _ in range(len(c1))]
-        for i in range(len(c)):
-            for j in range(len(c[0])):
+    elif isinstance(c1[0][0][0], int) and isinstance(c2[0][0], int) and c1.shape[1] == c2.shape[0]:
+        c = np.zeros(c1.shape, dtype=object)
+        for i in range(c.shape[0]):
+            for j in range(c.shape[1]):
                 c[i][j] = _mult(params, c1[i][j], c2[j])
         return c
     # matrix x matrix
-    elif isinstance(c1[0][0][0], int) and isinstance(c2[0][0][0], int) and len(c1) == len(c2) and len(c1[0]) == len(c2[0]):
-        c = [[[0, 0] for _ in range(len(c1[0]))] for _ in range(len(c1))]
-        for i in range(len(c)):
-            for j in range(len(c[0])):
+    elif isinstance(c1[0][0][0], int) and isinstance(c2[0][0][0], int) and c1.shape[1] == c2.shape[0]:
+        c = np.zeros(c1.shape, dtype=object)
+        for i in range(c.shape[0]):
+            for j in range(c.shape[1]):
                 c[i][j] = _mult(params, c1[i][j], c2[i][j])
         return c
     else:
@@ -103,48 +103,12 @@ def mult(params, c1, c2):
         return None
 
 def encode(params, x, delta, mode='nearest'):
-    if isinstance(x, np.ndarray):
-        x = x.tolist()
-    # scalar
-    if isinstance(x, float) or isinstance(x, int):
-        return _encode(params, x, delta, mode)
-    # vector
-    elif isinstance(x[0], float) or isinstance(x[0], int):
-        m = [0 for _ in range(len(x))]
-        for i in range(len(m)):
-            m[i] = _encode(params, x[i], delta, mode)
-        return m
-    # matrix
-    elif isinstance(x[0][0], float) or isinstance(x[0][0], int):
-        m = [[0 for _ in range(len(x[0]))] for _ in range(len(x))]
-        for i in range(len(m)):
-            for j in range(len(m[0])):
-                m[i][j] = _encode(params, x[i][j], delta, mode)
-        return m
-    else:
-        print('error: encoding')
-        return None
+    f = np.frompyfunc(_encode, 4, 1)
+    return f(params, x, delta, mode)
 
 def decode(params, m, delta):
-    # scalar
-    if isinstance(m, int):
-        return _decode(params, m, delta)
-    # vector
-    elif isinstance(m[0], int):
-        x = [0 for _ in range(len(m))]
-        for i in range(len(x)):
-            x[i] = _decode(params, m[i], delta)
-        return x
-    # matrix
-    elif isinstance(m[0][0], int):
-        x = [[0 for _ in range(len(m[0]))] for _ in range(len(m))]
-        for i in range(len(x)):
-            for j in range(len(x[0])):
-                x[i][j] = _decode(params, m[i][j], delta)
-        return x
-    else:
-        print('error: decoding')
-        return None
+    f = np.frompyfunc(_decode, 3, 1)
+    return f(params, m, delta)
 
 def enc(params, pk, x, delta, mode='nearest'):
     return encrypt(params, pk, encode(params, x, delta, mode))
@@ -159,24 +123,24 @@ def dec_add(params, sk, c, delta):
     # vector
     elif isinstance(c[0][0], int):
         x = 0
-        for i in range(len(c)):
+        for i in range(c.shape[0]):
             x += dec(params, sk, c[i], delta)
         return x
     # matrix
     elif isinstance(c[0][0][0], int):
-        x = [0 for _ in range(len(c))]
-        for i in range(len(c)):
+        x = np.zeros(c.shape[0], dtype=object)
+        for i in range(c.shape[1]):
             x[i] = dec(params, sk, c[i][0], delta)
-            for j in range(1, len(c[0])):
+            for j in range(1, c.shape[0]):
                 x[i] += dec(params, sk, c[i][j], delta)
         return x
     else:
-        print('error: decryption')
+        print('error: decryption with addition')
         return None
 
 def _encrypt(params, pk, m):
     r = get_rand(1, params.q)
-    return [mpow(params.g, r, params.p), (m * mpow(pk, r, params.p)) % params.p]
+    return np.array([mpow(params.g, r, params.p), (m * mpow(pk, r, params.p)) % params.p], dtype=object)
 
 def _decrypt(params, sk, c):
     return (minv(mpow(c[0], sk, params.p), params.p) * c[1]) % params.p
