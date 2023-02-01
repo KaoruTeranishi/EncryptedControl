@@ -189,79 +189,55 @@ def elementwise_int_mult(params, m, c):
         print('error: elementwise integer multiplication')
         return None
 
-def encode(x, a, b, a_, b_):
+def encode(params, x, delta):
     if isinstance(x, np.ndarray):
         x = x.tolist()
     # scalar
     if isinstance(x, float) or isinstance(x, int):
-        return _encode(x, a, b, a_, b_)
+        return _encode(params, x, delta)
     # vector
     elif isinstance(x[0], float) or isinstance(x[0], int):
-        m = [0 for i in range(len(x))]
+        m = [0 for _ in range(len(x))]
         for i in range(len(m)):
-            m[i] = _encode(x[i], a, b, a_, b_)
+            m[i] = _encode(params, x[i], delta)
         return m
     # matrix
     elif isinstance(x[0][0], float) or isinstance(x[0][0], int):
         m = [[0 for j in range(len(x[0]))] for i in range(len(x))]
         for i in range(len(m)):
             for j in range(len(m[0])):
-                m[i][j] = _encode(x[i][j], a, b, a_, b_)
+                m[i][j] = _encode(params, x[i][j], delta)
         return m
     else:
         print('error: encoding')
         return None
 
-def decode(m, a, b):
+def decode(params, m, delta):
     # scalar
     if isinstance(m, int):
-        return _decode(m, a, b)
+        return _decode(params, m, delta)
     # vector
     elif isinstance(m[0], int):
-        x = [0 for i in range(len(m))]
+        x = [0 for _ in range(len(m))]
         for i in range(len(x)):
-            x[i] = _decode(m[i], a, b)
+            x[i] = _decode(params, m[i], delta)
         return x
     # matrix
     elif isinstance(m[0][0], int):
-        x = [[0 for j in range(len(m[0]))] for i in range(len(m))]
+        x = [[0 for _ in range(len(m[0]))] for _ in range(len(m))]
         for i in range(len(x)):
             for j in range(len(x[0])):
-                x[i][j] = _decode(m[i][j], a, b)
+                x[i][j] = _decode(params, m[i][j], delta)
         return x
     else:
         print('error: decoding')
         return None
 
-def decode_(m, a, b):
-    # scalar
-    if isinstance(m, int):
-        return _decode_(m, a, b)
-    # vector
-    elif isinstance(m[0], int):
-        x = [0 for i in range(len(m))]
-        for i in range(len(x)):
-            x[i] = _decode_(m[i], a, b)
-        return x
-    # matrix
-    elif isinstance(m[0][0], int):
-        x = [[0 for j in range(len(m[0]))] for i in range(len(m))]
-        for i in range(len(x)):
-            for j in range(len(x[0])):
-                x[i][j] = _decode_(m[i][j], a, b)
-        return x
-    else:
-        print('error: decoding')
-        return None
+def enc(params, pk, x, delta):
+    return encrypt(params, pk, encode(params, x, delta))
 
-def enc(params, pk, x, a, b, a_, b_):
-    return encrypt(params, pk, encode(x, a, b, a_, b_))
-
-def dec(params, sk, c, a, b):
-    return decode(decrypt(params, sk, c), a, b)
-
-def dec_(params, sk, c, a, b):
-    return decode_(decrypt(params, sk, c), a, b)
+def dec(params, sk, c, delta):
+    return decode(params, decrypt(params, sk, c), delta)
 
 def _L(x, n):
     return (x - 1) // n
@@ -281,19 +257,20 @@ def _add(params, c1, c2):
 def _int_mult(params, m, c):
     return mpow(c, m, params.n_square)
 
-def _encode(x, a, b, a_, b_):
-    if x < -pow(2, a_):
-        print('error: underflow')
-        return None
-    elif x > pow(2, a_) - pow(2, -b_):
+def _encode(params, x, delta):
+    m = floor(x / delta + 0.5)
+
+    if m < 0:
+        if m < -floor((params.n - 1) / 2):
+            print('error: underflow')
+            return None
+        else:
+            m += params.n
+    elif m > floor(params.n / 2):
         print('error: overflow')
         return None
-    else:
-        q = floor(x * pow(2, b_) + 0.5) / pow(2, b_) # encoding to fixed point number
-        return int((pow(2, b) * q) % pow(2, a + 2 * b))
 
-def _decode(m, a, b):
-    return min_residue(m, pow(2, a + 2 * b)) / pow(2, 2 * b)
+    return m
 
-def _decode_(m, a, b):
-    return min_residue(m, pow(2, a + 2 * b)) / pow(2, b)
+def _decode(params, m, delta):
+    return min_residue(m, params.n) * delta
