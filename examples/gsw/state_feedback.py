@@ -82,7 +82,6 @@ for k in range(len(t)):
     u_[k] = dec(params, sk, u_enc[k], delta ** 2)
     # plant update
     x_[k+1] = A @ x_[k] + B @ u_[k]
-    print(u_[k])
 
 # figure
 plt.figure()
