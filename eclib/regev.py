@@ -100,8 +100,8 @@ def elementwise_add(params, c1, c2):
     # matrix + vector
     elif isinstance(c1[0][0][0][0], int) and isinstance(c2[0][0][0], int) and c1.shape[1] == c2.shape[0]:
         c = np.zeros(c1.shape, dtype=object)
-        for i in range(len(c)):
-            for j in range(len(c[0])):
+        for i in range(c.shape[0]):
+            for j in range(c.shape[1]):
                 c[i][j] = _add(params, c1[i][j], c2[j])
         return c
     # matrix + matrix
