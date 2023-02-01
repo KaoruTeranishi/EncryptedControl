@@ -1,4 +1,4 @@
-import eclib.elgamal as elgamal
+from eclib.dyn_elgamal import *
 from eclib.colors import *
 import eclib.figsetup
 import numpy as np
@@ -42,24 +42,24 @@ X, _, _ = dare(A, B, Q, R)
 F = -la.inv(B.T @ X @ B + R) @ (B.T @ X @ A)
 
 # cryptosystem
-key_length = 256
-params, pk, sk = elgamal.keygen(key_length)
+key_length = 64
+params, pk, sk = keygen(key_length)
 
 # scaling parameter
 delta = 0.01
 
 # controller encryption
-F_enc = elgamal.enc(params, pk, F, delta)
+F_enc = enc(params, pk, F, delta)
 
 # state
 x = 50 * np.ones([len(t) + 1, n])
 x_ = 50 * np.ones([len(t) + 1, n])
-x_enc = [[[0, 0] for j in range(n)] for i in range(len(t))]
+x_enc = np.zeros(len(t), dtype=object)
 
 # input
 u = np.zeros([len(t), m])
 u_ = np.zeros([len(t), m])
-u_enc = [[[[0, 0] for k in range(n)] for j in range(m)] for i in range(len(t))]
+u_enc = np.zeros(len(t), dtype=object)
 
 # simulation w/o encryption
 for k in range(len(t)):
@@ -70,12 +70,16 @@ for k in range(len(t)):
 
 # simulation w/ encryption
 for k in range(len(t)):
+    # key update
+    pk, sk, token = update_key(params, pk, sk)
     # state encryption
-    x_enc[k] = elgamal.enc(params, pk, x_[k], delta)
+    x_enc[k] = enc(params, pk, x_[k], delta)
+    # ciphertext update
+    F_enc = update_ct(params, F_enc, token)
     # encrypted controller
-    u_enc[k] = elgamal.mult(params, F_enc, x_enc[k])
+    u_enc[k] = mult(params, F_enc, x_enc[k])
     # input decryption
-    u_[k] = elgamal.dec_add(params, sk, u_enc[k], delta ** 2)
+    u_[k] = dec_add(params, sk, u_enc[k], delta ** 2)
     # plant update
     x_[k+1] = A @ x_[k] + B @ u_[k]
 
@@ -105,12 +109,12 @@ plt.legend(loc='upper right')
 fig = plt.figure()
 ax1 = fig.add_subplot(2, 1, 1)
 ax1.tick_params(left=False, labelbottom=False, labelleft=False)
-ax1.plot(t, [a[0][0][0] for a in u_enc], linestyle='-', color=blue, linewidth=1.0)
+ax1.plot(t, [a[0,0][0] for a in u_enc], linestyle='-', color=blue, linewidth=1.0)
 plt.ylabel(r'$c_{1}$')
 plt.xlim(0, simulation_time)
 ax2 = fig.add_subplot(2, 1, 2)
 ax2.tick_params(left=False, labelleft=False)
-ax2.plot(t, [a[0][0][1] for a in u_enc], linestyle='-', color=blue, linewidth=1.0)
+ax2.plot(t, [a[0,0][1] for a in u_enc], linestyle='-', color=blue, linewidth=1.0)
 plt.xlabel('Time (s)')
 plt.ylabel(r'$c_{2}$')
 plt.xlim(0, simulation_time)
@@ -120,12 +124,12 @@ fig.supylabel(r'$\mathsf{Enc}(\Psi_{11})$', fontsize=10)
 fig = plt.figure()
 ax1 = fig.add_subplot(2, 1, 1)
 ax1.tick_params(left=False, labelbottom=False, labelleft=False)
-ax1.plot(t, [a[0][1][0] for a in u_enc], linestyle='-', color=blue, linewidth=1.0)
+ax1.plot(t, [a[0,1][0] for a in u_enc], linestyle='-', color=blue, linewidth=1.0)
 plt.ylabel(r'$c_{1}$')
 plt.xlim(0, simulation_time)
 ax2 = fig.add_subplot(2, 1, 2)
 ax2.tick_params(left=False, labelleft=False)
-ax2.plot(t, [a[0][1][1] for a in u_enc], linestyle='-', color=blue, linewidth=1.0)
+ax2.plot(t, [a[0,1][1] for a in u_enc], linestyle='-', color=blue, linewidth=1.0)
 plt.xlabel('Time (s)')
 plt.ylabel(r'$c_{2}$')
 plt.xlim(0, simulation_time)
