@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
-from eclib import elgamal
+# from eclib import elgamal
+import elgamal
 from eclib.randutils import *
 from eclib.modutils import *
 from collections import namedtuple

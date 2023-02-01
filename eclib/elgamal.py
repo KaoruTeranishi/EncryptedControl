@@ -20,6 +20,9 @@ def keygen(bit_length):
     return params, pk, sk
 
 def encrypt(params, pk, m):
+    if isinstance(m, np.matrix):
+        m = np.array(m)
+
     # scalar
     if isinstance(m, int):
         return _encrypt(params, pk, m)
@@ -41,6 +44,9 @@ def encrypt(params, pk, m):
         return None
 
 def decrypt(params, sk, c):
+    if isinstance(c, np.matrix):
+        c = np.array(c)
+
     # scalar
     if isinstance(c[0], int):
         return _decrypt(params, sk, c)
@@ -62,6 +68,11 @@ def decrypt(params, sk, c):
         return None
 
 def mult(params, c1, c2):
+    if isinstance(c1, np.matrix):
+        c1 = np.array(c1)
+    if isinstance(c2, np.matrix):
+        c2 = np.array(c2)
+
     # scalar x scalar
     if isinstance(c1[0], int) and isinstance(c2[0], int):
         return _mult(params, c1, c2)
@@ -117,6 +128,9 @@ def dec(params, sk, c, delta):
     return decode(params, decrypt(params, sk, c), delta)
 
 def dec_add(params, sk, c, delta):
+    if isinstance(c, np.matrix):
+        c = np.array(c)
+
     # scalar
     if isinstance(c[0], int):
         return dec(params, sk, c, delta)

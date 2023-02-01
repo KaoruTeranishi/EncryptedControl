@@ -30,6 +30,9 @@ def keygen(n, q, sigma, m=None):
     return params, pk, sk
 
 def encrypt(params, pk, m):
+    if isinstance(m, np.matrix):
+        m = np.array(m)
+
     # scalar
     if isinstance(m, int):
         return _encrypt(params, pk, m)
@@ -51,6 +54,9 @@ def encrypt(params, pk, m):
         return None
 
 def decrypt(params, sk, c):
+    if isinstance(c, np.matrix):
+        c = np.array(c)
+
     # scalar
     if isinstance(c[0][0], int):
         return _decrypt(params, sk, c)
@@ -72,6 +78,11 @@ def decrypt(params, sk, c):
         return None
 
 def add(params, c1, c2):
+    if isinstance(c1, np.matrix):
+        c1 = np.array(c1)
+    if isinstance(c2, np.matrix):
+        c2 = np.array(c2)
+
     # scalar + scalar
     if isinstance(c1[0][0], int) and isinstance(c2[0][0], int):
         return _add(params, c1, c2)
@@ -93,6 +104,11 @@ def add(params, c1, c2):
         return None
 
 def elementwise_add(params, c1, c2):
+    if isinstance(c1, np.matrix):
+        c1 = np.array(c1)
+    if isinstance(c2, np.matrix):
+        c2 = np.array(c2)
+
     # scalar + scalar
     if isinstance(c1[0][0], int) and isinstance(c2[0][0], int):
         return add(params, c1, c2)
@@ -114,6 +130,11 @@ def elementwise_add(params, c1, c2):
         return None
 
 def mult(params, c1, c2):
+    if isinstance(c1, np.matrix):
+        c1 = np.array(c1)
+    if isinstance(c2, np.matrix):
+        c2 = np.array(c2)
+
     # scalar x scalar
     if isinstance(c1[0][0], int) and isinstance(c2[0][0], int):
         return _mult(params, c1, c2)
@@ -156,6 +177,11 @@ def mult(params, c1, c2):
         return None
 
 def elementwise_mult(params, c1, c2):
+    if isinstance(c1, np.matrix):
+        c1 = np.array(c1)
+    if isinstance(c2, np.matrix):
+        c2 = np.array(c2)
+
     # scalar x scalar
     if isinstance(c1[0][0], int) and isinstance(c2[0][0], int):
         return mult(params, c1, c2)
@@ -190,6 +216,11 @@ def elementwise_mult(params, c1, c2):
         return None
 
 def int_mult(params, m, c):
+    if isinstance(m, np.matrix):
+        m = np.array(m)
+    if isinstance(c, np.matrix):
+        c = np.array(c)
+
     # scalar (plaintext) x scalar (ciphertext)
     if isinstance(m, int) and isinstance(c[0][0], int):
         return _int_mult(params, m, c)
@@ -232,6 +263,11 @@ def int_mult(params, m, c):
         return None
 
 def elementwise_int_mult(params, m, c):
+    if isinstance(m, np.matrix):
+        m = np.array(m)
+    if isinstance(c, np.matrix):
+        c = np.array(c)
+
     # scalar (plaintext) x scalar (ciphertext)
     if isinstance(m, int) and isinstance(c[0][0], int):
         return int_mult(params, m, c)
