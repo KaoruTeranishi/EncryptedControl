@@ -1,22 +1,24 @@
 #! /usr/bin/env python
 
-from eclib.numutils import *
+from numutils import *
 from randutils import *
-from eclib.primeutils import *
-from eclib.modutils import *
+from primeutils import *
+from modutils import *
 from collections import namedtuple
 import numpy as np
-import scipy as sp
-from math import floor, log2
+from math import floor, ceil, log2
 
-def keygen(bit_length, n, sigma):
-    params = namedtuple('Parameters', ['q', 'n', 'l', 'm', 'N', 'sigma'])
-    params.q = get_prime(bit_length)
+def keygen(n, q, sigma, m=None):
+    params = namedtuple('Parameters', ['n', 'q', 'sigma', 'm', 'l', 'N'])
     params.n = n
-    params.l = floor(log2(params.q)) + 1
-    params.m = params.n * params.l
-    params.N = (params.n + 1) * params.l
+    params.q = q
     params.sigma = sigma
+    params.l = ceil(log2(params.q))
+    params.N = (params.n + 1) * params.l
+    if m == None:
+        params.m = 2 * params.n * ceil(log2(params.q))
+    else:
+        params.m = m
 
     A = np.array([[get_rand(0, params.q) for _ in range(params.m)] for _ in range(params.n)], dtype=object)
     s = np.array([[get_rand(0, params.q)] for _ in range(params.n)], dtype=object)
