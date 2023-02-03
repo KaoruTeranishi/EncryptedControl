@@ -1,16 +1,31 @@
 #! /usr/bin/env python
 
-from eclib import regev, gsw
+# from eclib import regev, gsw
+import regev, gsw
 from eclib.numutils import *
 from eclib.randutils import *
 from eclib.primeutils import *
 from eclib.modutils import *
+from collections import namedtuple
+from math import ceil, log2
 
-def keygen(n, q, sigma, m=None):
+def keygen(n, t, q, sigma, m=None):
+    params = namedtuple('Parameters', ['n', 't', 'q', 'sigma', 'm', 'l', 'N'])
+
     if m == None:
-        return gsw.keygen(n, q, sigma)
+        lwe_params, pk, sk = regev.keygen(n, t, q, sigma)
     else:
-        return gsw.keygen(n, q, sigma, m)
+        lwe_params, pk, sk = regev.keygen(n, t, q, sigma, m)
+    
+    params.n = lwe_params.n
+    params.t = lwe_params.t
+    params.q = lwe_params.q
+    params.sigma = lwe_params.sigma
+    params.m = lwe_params.m
+    params.l = ceil(log2(params.q))
+    params.N = (params.n + 1) * params.l
+
+    return params, pk, sk
 
 def encrypt(params, pk, m):
     return regev.encrypt(params, pk, m)

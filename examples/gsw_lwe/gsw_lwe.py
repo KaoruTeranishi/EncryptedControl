@@ -1,12 +1,13 @@
 from eclib.gsw_lwe import *
 import numpy as np
 
-n = 5
+n = 10
+t = pow(2, 20)
 q = pow(2, 48)
 sigma = 3.2
-delta = 1e-6
+delta = 1e-2
 
-params, pk, sk = keygen(n, q, sigma, 1)
+params, pk, sk = keygen(n, t, q, sigma, n)
 
 x1 = 1.23
 x2 = -2.34

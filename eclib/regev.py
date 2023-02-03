@@ -8,9 +8,10 @@ from collections import namedtuple
 import numpy as np
 from math import floor, ceil, log2
 
-def keygen(n, q, sigma, m=None):
-    params = namedtuple('Parameters', ['n', 'q', 'sigma', 'm'])
+def keygen(n, t, q, sigma, m=None):
+    params = namedtuple('Parameters', ['n', 't', 'q', 'sigma', 'm'])
     params.n = n
+    params.t = t
     params.q = q
     params.sigma = sigma
     if m == None:
@@ -229,10 +230,10 @@ def dec(params, sk, c, delta):
 
 def _encrypt(params, pk, m):
     r = np.array([[get_rand(0, 2)] for _ in range(params.m)], dtype=object)
-    return (pk @ r + m * np.block([[1], [np.zeros([params.n, 1], dtype=object)]])) % params.q
+    return (pk @ r + floor(params.q / params.t) * m * np.block([[1], [np.zeros([params.n, 1], dtype=object)]])) % params.q
 
 def _decrypt(params, sk, c):
-    return (sk @ c)[0][0] % params.q
+    return floor((params.t / params.q) * ((sk @ c)[0][0] % params.q) + 0.5) % params.t
 
 def _add(params, c1, c2):
     return (c1 + c2) % params.q
@@ -244,16 +245,16 @@ def _encode(params, x, delta):
     m = floor(x / delta + 0.5)
 
     if m < 0:
-        if m < -floor((params.q - 1) / 2):
+        if m < -floor((params.t - 1) / 2):
             print('error: underflow')
             return None
         else:
-            m += params.q
-    elif m > floor(params.q / 2):
+            m += params.t
+    elif m > floor(params.t / 2):
         print('error: overflow')
         return None
 
     return m
 
 def _decode(params, m, delta):
-    return min_residue(m, params.q) * delta
+    return min_residue(m, params.t) * delta

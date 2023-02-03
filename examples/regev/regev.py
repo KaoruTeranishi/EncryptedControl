@@ -2,11 +2,12 @@ from eclib.regev import *
 import numpy as np
 
 n = 10
+t = pow(2, 20)
 q = pow(2, 48)
 sigma = 3.2
-delta = 1e-6
+delta = 1e-2
 
-params, pk, sk = keygen(n, q, sigma)
+params, pk, sk = keygen(n, t, q, sigma)
 
 x1 = 1.23
 x2 = -2.34

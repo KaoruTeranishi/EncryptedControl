@@ -44,12 +44,13 @@ F = -la.inv(B.T @ X @ B + R) @ (B.T @ X @ A)
 
 # cryptosystem
 N = 10
-q = pow(2, 64)
+T = pow(2, 64)
+q = pow(2, 128)
 sigma = 3.2
-params, pk, sk = keygen(N, q, sigma)
+params, pk, sk = keygen(N, T, q, sigma, N)
 
 # scaling parameter
-delta = 1e-6
+delta = 1e-4
 
 # controller encryption
 F_enc = enc_gsw(params, pk, F, delta)
