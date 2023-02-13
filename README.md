@@ -50,4 +50,4 @@ Kaoru Teranishi
 
 [5] C. Gentry, A. Sahai, and B. Waters, "Homomorphic encryption from learning with errors: Conceptually-simpler, asymptotically-faster, attribute-based," Cryptology ePrint Archive, Paper 2013/340, 2013.
 
-[6] J. Kim, H. Shim, and K. Han, "Dynamic controller that operates over homomorphically encrypted data for infinite time horizon," IEEE Transactions on Automatic Control (Early access)
+[6] J. Kim, H. Shim, and K. Han, "Dynamic controller that operates over homomorphically encrypted data for infinite time horizon," IEEE Transactions on Automatic Control, vol. 68, no. 2, pp. 660–672, 2023.
