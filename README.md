@@ -26,7 +26,7 @@ Run pip command on your terminal.
 
 # Usage
 
-See [tutorial_slide_1.pdf](https://github.com/KaoruTeranishi/EncryptedControl/blob/master/doc/tutorial_slide_1.pdf) and [tutorial_slide_2.pdf](https://github.com/KaoruTeranishi/EncryptedControl/blob/master/doc/tutorial_slide_2.pdf).
+See [tutorial_slide_1.pdf](https://github.com/KaoruTeranishi/EncryptedControl/blob/master/doc/tutorial_slide_1.pdf), [tutorial_slide_2.pdf](https://github.com/KaoruTeranishi/EncryptedControl/blob/master/doc/tutorial_slide_2.pdf), and [example codes](https://github.com/KaoruTeranishi/EncryptedControl/tree/master/examples).
 
 # License
 
