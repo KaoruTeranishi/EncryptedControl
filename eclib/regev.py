@@ -245,12 +245,12 @@ def _encode(params, x, delta):
     m = floor(x / delta + 0.5)
 
     if m < 0:
-        if m < -floor((params.t - 1) / 2):
+        if m < -((params.t - 1) // 2):
             print('error: underflow')
             return None
         else:
             m += params.t
-    elif m > floor(params.t / 2):
+    elif m > (params.t // 2):
         print('error: overflow')
         return None
 
