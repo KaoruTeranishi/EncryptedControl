@@ -1,4 +1,5 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
+
 
 # Bruce Schneier algorithm
 def mpow(a, b, m):
@@ -14,6 +15,7 @@ def mpow(a, b, m):
 
     return c
 
+
 # extended Euclidean algorithm
 def minv(a, m):
     b = m
@@ -26,8 +28,9 @@ def minv(a, m):
         u = u - t * v
         a, b = b, a
         u, v = v, u
-    
+
     return u + m if u < 0 else u
+
 
 def min_residue(a, m):
     b = a % m

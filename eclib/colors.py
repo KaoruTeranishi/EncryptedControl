@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 # This is a map of universal colors provided in https://jfly.uni-koeln.de/colorset/
 
@@ -6,7 +6,7 @@
 red = (1, 75 / 255, 0)
 yellow = (1, 241 / 255, 0)
 green = (3 / 255, 175 / 255, 122 / 255)
-blue = (0 , 90 / 255, 1)
+blue = (0, 90 / 255, 1)
 sky_blue = (77 / 255, 196 / 255, 1)
 pink = (1, 128 / 255, 130 / 255)
 orange = (246 / 255, 170 / 255, 0)
