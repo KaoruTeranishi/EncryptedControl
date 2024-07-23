@@ -246,7 +246,7 @@ def elementwise_int_mult(
             return np.array(
                 [
                     [_int_mult(params, m[i][j], c[j]) for j in range(m.shape[1])]
-                    for i in range(c.shape[0])
+                    for i in range(m.shape[0])
                 ],
                 dtype=object,
             )
