@@ -102,7 +102,7 @@ def decrypt(
             )
 
         case _:
-            raise exceptions.EncryptionError
+            raise exceptions.DecryptionError
 
 
 def mult(
