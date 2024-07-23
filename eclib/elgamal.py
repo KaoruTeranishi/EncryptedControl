@@ -12,26 +12,46 @@ import eclib.randutils as ru
 from eclib import exceptions
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class PublicParameters:
     p: int
     q: int
     g: int
 
+    def __init__(self, bit_length: int):
+        self.q, self.p = pu.get_safe_prime(bit_length)
+        self.g = nu.get_generator(self.q, self.p)
 
-def keygen(bit_length: int) -> tuple[PublicParameters, int, int]:
-    q, p = pu.get_safe_prime(bit_length)
-    g = nu.get_generator(q, p)
-    params = PublicParameters(p, q, g)
 
-    sk = ru.get_rand(1, params.q)
+@dataclass(slots=True)
+class SecretKey:
+    s: int
 
-    pk = pow(params.g, sk, params.p)
+    def __init__(self, params: PublicParameters):
+        self.s = ru.get_rand(1, params.q)
+
+
+@dataclass(slots=True)
+class PublicKey:
+    h: int
+
+    def __init__(self, params: PublicParameters, sk: SecretKey):
+        self.h = pow(params.g, sk.s, params.p)
+
+
+def keygen(bit_length: int) -> tuple[PublicParameters, PublicKey, SecretKey]:
+    params = PublicParameters(bit_length)
+
+    sk = SecretKey(params)
+
+    pk = PublicKey(params, sk)
 
     return params, pk, sk
 
 
-def encrypt(params: PublicParameters, pk: int, m: ArrayLike) -> NDArray[np.object_]:
+def encrypt(
+    params: PublicParameters, pk: PublicKey, m: ArrayLike
+) -> NDArray[np.object_]:
     m = np.asarray(m, dtype=object)
 
     match m.ndim:
@@ -57,7 +77,9 @@ def encrypt(params: PublicParameters, pk: int, m: ArrayLike) -> NDArray[np.objec
             raise exceptions.EncryptionError
 
 
-def decrypt(params: PublicParameters, sk: int, c: NDArray[np.object_]) -> ArrayLike:
+def decrypt(
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_]
+) -> ArrayLike:
     c = np.asarray(c, dtype=object)
 
     match c.ndim - 1:
@@ -175,19 +197,19 @@ def decode(params: PublicParameters, m: ArrayLike, delta: float) -> ArrayLike:
 
 
 def enc(
-    params: PublicParameters, pk: int, x: ArrayLike, delta: float
+    params: PublicParameters, pk: PublicKey, x: ArrayLike, delta: float
 ) -> NDArray[np.object_]:
     return encrypt(params, pk, encode(params, x, delta))
 
 
 def dec(
-    params: PublicParameters, sk: int, c: NDArray[np.object_], delta: float
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
 ) -> ArrayLike:
     return decode(params, decrypt(params, sk, c), delta)
 
 
 def dec_add(
-    params: PublicParameters, sk: int, c: NDArray[np.object_], delta: float
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
 ) -> ArrayLike:
     c = np.asarray(c)
 
@@ -207,17 +229,17 @@ def dec_add(
             raise exceptions.DecryptionError
 
 
-def _encrypt(params: PublicParameters, pk: int, m: int) -> NDArray[np.object_]:
+def _encrypt(params: PublicParameters, pk: PublicKey, m: int) -> NDArray[np.object_]:
     r = ru.get_rand(1, params.q)
 
     return np.array(
-        [pow(params.g, r, params.p), (m * pow(pk, r, params.p)) % params.p],
+        [pow(params.g, r, params.p), (m * pow(pk.h, r, params.p)) % params.p],
         dtype=object,
     )
 
 
-def _decrypt(params: PublicParameters, sk: int, c: NDArray[np.object_]) -> int:
-    return (pow(c[0], -sk, params.p) * c[1]) % params.p
+def _decrypt(params: PublicParameters, sk: SecretKey, c: NDArray[np.object_]) -> int:
+    return (pow(c[0], -sk.s, params.p) * c[1]) % params.p
 
 
 def _mult(
