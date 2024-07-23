@@ -1,11 +1,5 @@
 #! /usr/bin/env python3
 
-from math import gcd
-
-
-def lcm(a: int, b: int) -> int:
-    return (a * b) // gcd(a, b)
-
 
 def is_generator(g: int, q: int, p: int) -> bool:
     if g <= 1 or g >= p:
