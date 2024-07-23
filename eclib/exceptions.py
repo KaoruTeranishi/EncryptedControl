@@ -19,3 +19,7 @@ class DecryptionError(Exception):
 
 class HomomorphicOperationError(Exception):
     pass
+
+
+class CiphertextUpdateError(Exception):
+    pass
