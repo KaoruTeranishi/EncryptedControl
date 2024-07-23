@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+from math import gcd
+
 import eclib.randutils as ru
 
 
@@ -41,3 +43,13 @@ def get_safe_prime(bit_length: int) -> tuple[int, int]:
         p = get_prime(bit_length)
 
     return p, 2 * p + 1
+
+
+def get_semiprime_factors(bit_length: int) -> tuple[int, int]:
+    p = get_prime(bit_length)
+    q = get_prime(bit_length)
+    while gcd(p * q, (p - 1) * (q - 1)) != 1 or p == q:
+        p = get_prime(bit_length)
+        q = get_prime(bit_length)
+
+    return p, q
