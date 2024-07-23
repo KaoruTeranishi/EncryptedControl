@@ -311,15 +311,14 @@ def _int_mult(params: PublicParameters, m: int, c: int) -> int:
 def _encode(params: PublicParameters, x: float, delta: float) -> int:
     m = floor(x / delta + 0.5)
 
-    if m < 0:
-        if m < -((params.n - 1) // 2):
-            raise exceptions.EncodingError("Underflow")
-        else:
-            m += params.n
+    if m < -((params.n - 1) // 2):
+        raise exceptions.EncodingError("Underflow")
+
     elif m > (params.n // 2):
         raise exceptions.EncodingError("Overflow")
 
-    return m
+    else:
+        return m % params.n
 
 
 def _decode(params: PublicParameters, m: int, delta: float) -> float:
