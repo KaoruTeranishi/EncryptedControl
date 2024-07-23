@@ -2,41 +2,32 @@
 
 from math import gcd
 
-import eclib.modutils as mu
 
-
-def lcm(a, b):
+def lcm(a: int, b: int) -> int:
     return (a * b) // gcd(a, b)
 
 
-def is_generator(g, q, p):
+def is_generator(g: int, q: int, p: int) -> bool:
     if g <= 1 or g >= p:
         return False
-    elif mu.mpow(g, q, p) == 1:
+    elif pow(g, q, p) == 1:
         return True
     else:
         return False
 
 
-def is_element(m, q, p):
+def is_element(m: int, q: int, p: int) -> bool:
     if m <= 0 or m >= p:
         return False
-    elif mu.mpow(m, q, p) == 1:
+    elif pow(m, q, p) == 1:
         return True
     else:
         return False
 
 
-def get_generator(q, p):
+def get_generator(q: int, p: int) -> int:
     g = 2
-    while not is_generator(g, q, p):
+    while is_generator(g, q, p) is False:
         g += 1
 
     return g
-
-
-def get_dmax(params):
-    G = [mu.mpow(params.g, i, params.p) for i in range(params.q)]
-    G.sort()
-    G.append(params.p)
-    return max([x - y for (x, y) in zip(G[1:], G[:-1])])
