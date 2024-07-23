@@ -108,79 +108,51 @@ def decrypt(
 def mult(
     params: PublicParameters, c1: NDArray[np.object_], c2: NDArray[np.object_]
 ) -> NDArray[np.object_]:
-    c1 = np.asarray(c1)
-    c2 = np.asarray(c2)
+    c1 = np.asarray(c1, dtype=object)
+    c2 = np.asarray(c2, dtype=object)
 
     match c1.ndim - 1:
-        case 0:
-            match c2.ndim - 1:
-                case 0:
-                    return _mult(params, c1, c2)
+        case 0 if c2.ndim - 1 == 0:
+            return _mult(params, c1, c2)
 
-                case 1:
-                    return np.array(
-                        [_mult(params, c1, c2[i]) for i in range(c2.shape[0])],
-                        dtype=object,
-                    )
+        case 0 if c2.ndim - 1 == 1:
+            return np.array(
+                [_mult(params, c1, c2[i]) for i in range(c2.shape[0])],
+                dtype=object,
+            )
 
-                case 2:
-                    return np.array(
-                        [
-                            [_mult(params, c1, c2[i][j]) for j in range(c2.shape[1])]
-                            for i in range(c2.shape[0])
-                        ],
-                        dtype=object,
-                    )
+        case 0 if c2.ndim - 1 == 2:
+            return np.array(
+                [
+                    [_mult(params, c1, c2[i][j]) for j in range(c2.shape[1])]
+                    for i in range(c2.shape[0])
+                ],
+                dtype=object,
+            )
 
-                case _:
-                    raise exceptions.HomomorphicOperationError
+        case 1 if c1.shape == c2.shape:
+            return np.array(
+                [_mult(params, c1[i], c2[i]) for i in range(c1.shape[0])],
+                dtype=object,
+            )
 
-        case 1:
-            if c1.shape == c2.shape:
-                return np.array(
-                    [_mult(params, c1[i], c2[i]) for i in range(c1.shape[0])],
-                    dtype=object,
-                )
+        case 2 if c2.ndim - 1 == 1 and c1.shape[1] == c2.shape[0]:
+            return np.array(
+                [
+                    [_mult(params, c1[i][j], c2[j]) for j in range(c1.shape[1])]
+                    for i in range(c1.shape[0])
+                ],
+                dtype=object,
+            )
 
-            else:
-                raise exceptions.HomomorphicOperationError
-
-        case 2:
-            match c2.ndim - 1:
-                case 1:
-                    if c1.shape[1] == c2.shape[0]:
-                        return np.array(
-                            [
-                                [
-                                    _mult(params, c1[i][j], c2[j])
-                                    for j in range(c1.shape[1])
-                                ]
-                                for i in range(c1.shape[0])
-                            ],
-                            dtype=object,
-                        )
-
-                    else:
-                        raise exceptions.HomomorphicOperationError
-
-                case 2:
-                    if c1.shape == c2.shape:
-                        return np.array(
-                            [
-                                [
-                                    _mult(params, c1[i][j], c2[i][j])
-                                    for j in range(c1.shape[1])
-                                ]
-                                for i in range(c1.shape[0])
-                            ],
-                            dtype=object,
-                        )
-
-                    else:
-                        raise exceptions.HomomorphicOperationError
-
-                case _:
-                    raise exceptions.HomomorphicOperationError
+        case 2 if c1.shape == c2.shape:
+            return np.array(
+                [
+                    [_mult(params, c1[i][j], c2[i][j]) for j in range(c1.shape[1])]
+                    for i in range(c1.shape[0])
+                ],
+                dtype=object,
+            )
 
         case _:
             raise exceptions.HomomorphicOperationError
@@ -211,19 +183,17 @@ def dec(
 def dec_add(
     params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
 ) -> ArrayLike:
-    c = np.asarray(c)
+    c = np.asarray(c, dtype=object)
 
     match c.ndim - 1:
         case 0:
             return dec(params, sk, c, delta)
 
         case 1:
-            x = dec(params, sk, c, delta)
-            return np.sum(x, axis=0)
+            return np.sum(dec(params, sk, c, delta), axis=0)
 
         case 2:
-            x = dec(params, sk, c, delta)
-            return np.sum(x, axis=1)
+            return np.sum(dec(params, sk, c, delta), axis=1)
 
         case _:
             raise exceptions.DecryptionError
