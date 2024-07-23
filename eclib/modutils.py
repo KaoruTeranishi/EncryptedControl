@@ -1,10 +1,7 @@
 #! /usr/bin/env python3
 
+from math import floor
+
 
 def min_residue(a: int, m: int) -> int:
-    b = a % m
-    c = b - m
-    if b >= abs(c):
-        return c
-    else:
-        return b
+    return a - floor(a / m + 0.5) * m
