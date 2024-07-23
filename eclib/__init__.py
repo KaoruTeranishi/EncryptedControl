@@ -1,6 +1,9 @@
-#! /usr/bin/env python
-import os, glob
+#! /usr/bin/env python3
+
+import glob
+import os
 
 __all__ = [
-    os.path.split(os.path.splitext(file)[0])[1] for file in glob.glob(os.path.join(os.path.dirname(__file__), '[a-zA-Z0-9]*.py'))
+    os.path.split(os.path.splitext(file)[0])[1]
+    for file in glob.glob(os.path.join(os.path.dirname(__file__), "[a-zA-Z0-9]*.py"))
 ]
