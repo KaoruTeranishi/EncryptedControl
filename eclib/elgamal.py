@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from math import floor
+from typing import Optional
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -18,25 +19,37 @@ class PublicParameters:
     q: int
     g: int
 
-    def __init__(self, bit_length: int):
-        self.q, self.p = pu.get_safe_prime(bit_length)
-        self.g = nu.get_generator(self.q, self.p)
+    def __init__(self, bit_length: Optional[int]):
+        if bit_length is None:
+            self.p = self.q = self.g = 0
+
+        else:
+            self.q, self.p = pu.get_safe_prime(bit_length)
+            self.g = nu.get_generator(self.q, self.p)
 
 
 @dataclass(slots=True)
 class SecretKey:
     s: int
 
-    def __init__(self, params: PublicParameters):
-        self.s = ru.get_rand(1, params.q)
+    def __init__(self, params: Optional[PublicParameters]):
+        if params is None:
+            self.s = 0
+
+        else:
+            self.s = ru.get_rand(1, params.q)
 
 
 @dataclass(slots=True)
 class PublicKey:
     h: int
 
-    def __init__(self, params: PublicParameters, sk: SecretKey):
-        self.h = pow(params.g, sk.s, params.p)
+    def __init__(self, params: Optional[PublicParameters], sk: Optional[SecretKey]):
+        if params is None and sk is None:
+            self.h = 0
+
+        elif params is not None and sk is not None:
+            self.h = pow(params.g, sk.s, params.p)
 
 
 def keygen(bit_length: int) -> tuple[PublicParameters, PublicKey, SecretKey]:

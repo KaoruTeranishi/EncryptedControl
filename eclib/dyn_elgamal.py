@@ -17,7 +17,12 @@ class Token:
 
 
 def keygen(bit_length: int) -> tuple[PublicParameters, PublicKey, SecretKey]:
-    return elgamal.keygen(bit_length)
+    sk = SecretKey(params=None)
+    pk = PublicKey(params=None, sk=None)
+
+    params, pk, sk = elgamal.keygen(bit_length)
+
+    return params, pk, sk
 
 
 def encrypt(params: PublicParameters, pk: PublicKey, m: int) -> NDArray[np.object_]:
@@ -65,11 +70,14 @@ def dec_add(
 def update_key(
     params: PublicParameters, pk: PublicKey, sk: SecretKey
 ) -> tuple[PublicKey, SecretKey, Token]:
-    t = Token(ru.get_rand(1, params.q), pk.h)
-    pk.h = pk.h * pow(params.g, t.s, params.p) % params.p
-    sk.s = (sk.s + t.s) % params.q
+    sk_updated = SecretKey(params=None)
+    pk_updated = PublicKey(params=None, sk=None)
 
-    return pk, sk, t
+    t = Token(ru.get_rand(1, params.q), pk.h)
+    sk_updated.s = (sk.s + t.s) % params.q
+    pk_updated.h = pk.h * pow(params.g, t.s, params.p) % params.p
+
+    return pk_updated, sk_updated, t
 
 
 def update_ct(
@@ -104,13 +112,12 @@ def _update_ct(
     params: PublicParameters, c: NDArray[np.object_], t: Token
 ) -> NDArray[np.object_]:
     c = np.asarray(c, dtype=object)
-    r = ru.get_rand(1, params.q)
-    c[0] = (c[0] * pow(params.g, r, params.p)) % params.p
+    c_updated = np.zeros_like(c)
 
-    return np.array(
-        [
-            c[0],
-            (pow(c[0], t.s, params.p) * c[1] * pow(t.h, r, params.p)) % params.p,
-        ],
-        dtype=object,
-    )
+    r = ru.get_rand(1, params.q)
+    c_updated[0] = (c[0] * pow(params.g, r, params.p)) % params.p
+    c_updated[1] = (
+        pow(c_updated[0], t.s, params.p) * c[1] * pow(t.h, r, params.p)
+    ) % params.p
+
+    return c_updated
