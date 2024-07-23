@@ -7,7 +7,7 @@ from numpy.typing import ArrayLike, NDArray
 
 import eclib.randutils as ru
 from eclib import elgamal, exceptions
-from eclib.elgamal import PublicParameters
+from eclib.elgamal import PublicKey, PublicParameters, SecretKey
 
 
 @dataclass(slots=True)
@@ -16,15 +16,17 @@ class Token:
     h: int
 
 
-def keygen(bit_length: int) -> tuple[PublicParameters, int, int]:
+def keygen(bit_length: int) -> tuple[PublicParameters, PublicKey, SecretKey]:
     return elgamal.keygen(bit_length)
 
 
-def encrypt(params: PublicParameters, pk: int, m: int) -> NDArray[np.object_]:
+def encrypt(params: PublicParameters, pk: PublicKey, m: int) -> NDArray[np.object_]:
     return elgamal.encrypt(params, pk, m)
 
 
-def decrypt(params: PublicParameters, sk: int, c: NDArray[np.object_]) -> ArrayLike:
+def decrypt(
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_]
+) -> ArrayLike:
     return elgamal.decrypt(params, sk, c)
 
 
@@ -43,26 +45,31 @@ def decode(params: PublicParameters, m: ArrayLike, delta: float) -> ArrayLike:
 
 
 def enc(
-    params: PublicParameters, pk: int, x: ArrayLike, delta: float
+    params: PublicParameters, pk: PublicKey, x: ArrayLike, delta: float
 ) -> NDArray[np.object_]:
     return elgamal.enc(params, pk, x, delta)
 
 
 def dec(
-    params: PublicParameters, sk: int, c: NDArray[np.object_], delta: float
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
 ) -> ArrayLike:
     return elgamal.dec(params, sk, c, delta)
 
 
 def dec_add(
-    params: PublicParameters, sk: int, c: NDArray[np.object_], delta: float
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
 ) -> ArrayLike:
     return elgamal.dec_add(params, sk, c, delta)
 
 
-def update_key(params: PublicParameters, pk: int, sk: int) -> tuple[int, int, Token]:
-    t = Token(ru.get_rand(1, params.q), pk)
-    return (pk * pow(params.g, t.s, params.p)) % params.p, (sk + t.s) % params.q, t
+def update_key(
+    params: PublicParameters, pk: PublicKey, sk: SecretKey
+) -> tuple[PublicKey, SecretKey, Token]:
+    t = Token(ru.get_rand(1, params.q), pk.h)
+    pk.h = pk.h * pow(params.g, t.s, params.p) % params.p
+    sk.s = (sk.s + t.s) % params.q
+
+    return pk, sk, t
 
 
 def update_ct(
@@ -98,12 +105,12 @@ def _update_ct(
 ) -> NDArray[np.object_]:
     c = np.asarray(c, dtype=object)
     r = ru.get_rand(1, params.q)
-    tmp = (c[0] * pow(params.g, r, params.p)) % params.p
+    c[0] = (c[0] * pow(params.g, r, params.p)) % params.p
 
     return np.array(
         [
-            tmp,
-            (pow(tmp, t.s, params.p) * c[1] * pow(t.h, r, params.p)) % params.p,
+            c[0],
+            (pow(c[0], t.s, params.p) * c[1] * pow(t.h, r, params.p)) % params.p,
         ],
         dtype=object,
     )
