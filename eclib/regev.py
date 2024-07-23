@@ -219,7 +219,7 @@ def int_mult(
                 dtype=object,
             )
 
-        case 1 if m.shape[0] == c.shape[0]:
+        case 1 if c.ndim - 1 == 1 and m.shape[0] == c.shape[0]:
             c_s = np.zeros(params.n + 1, dtype=object)
 
             for i in range(m.shape[0]):
@@ -262,7 +262,7 @@ def elementwise_int_mult(
         case 0:
             return int_mult(params, m.item(), c)
 
-        case 1 if m.shape[0] == c.shape[0]:
+        case 1 if c.ndim - 1 == 1 and m.shape[0] == c.shape[0]:
             return np.array(
                 [_int_mult(params, m[i], c[i]) for i in range(m.shape[0])],
                 dtype=object,
