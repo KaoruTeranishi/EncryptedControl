@@ -6,7 +6,7 @@ from typing import Optional
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from eclib import exceptions, gsw, regev
+from eclib import gsw, regev
 from eclib.regev import PublicKey, SecretKey
 
 
@@ -110,7 +110,7 @@ def mult(
             return c_m
 
         case _:
-            raise exceptions.HomomorphicOperationError
+            raise ValueError
 
 
 def elementwise_mult(

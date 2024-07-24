@@ -9,7 +9,6 @@ from numpy.typing import ArrayLike, NDArray
 
 import eclib.primeutils as pu
 import eclib.randutils as ru
-from eclib import exceptions
 
 
 @dataclass(slots=True)
@@ -86,7 +85,7 @@ def encrypt(
             )
 
         case _:
-            raise exceptions.EncryptionError
+            raise ValueError
 
 
 def decrypt(
@@ -114,7 +113,7 @@ def decrypt(
             )
 
         case _:
-            raise exceptions.DecryptionError
+            raise ValueError
 
 
 def mult(
@@ -167,7 +166,7 @@ def mult(
             )
 
         case _:
-            raise exceptions.HomomorphicOperationError
+            raise ValueError
 
 
 def encode(params: PublicParameters, x: ArrayLike, delta: float) -> ArrayLike:
@@ -208,7 +207,7 @@ def dec_add(
             return np.sum(dec(params, sk, c, delta), axis=1)
 
         case _:
-            raise exceptions.DecryptionError
+            raise ValueError
 
 
 def _encrypt(params: PublicParameters, pk: PublicKey, m: int) -> NDArray[np.object_]:
@@ -238,11 +237,11 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
 
     if m < 0:
         if m < -params.q:
-            raise exceptions.EncodingError("Underflow")
+            raise ValueError("Underflow")
         else:
             m += params.p
     elif m > params.q:
-        raise exceptions.EncodingError("Overflow")
+        raise ValueError("Overflow")
 
     if x / delta == int(x / delta) or first_decimal_place >= 5:
         for i in range(params.q):
@@ -257,7 +256,7 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
             elif m - i > 0 and _is_element(m - i, params.q, params.p):
                 return m - i
 
-    raise exceptions.EncodingError
+    raise ValueError
 
 
 def _decode(params: PublicParameters, m: int, delta: float) -> float:

@@ -6,7 +6,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 import eclib.randutils as ru
-from eclib import elgamal, exceptions
+from eclib import elgamal
 from eclib.elgamal import PublicKey, PublicParameters, SecretKey
 
 
@@ -105,7 +105,7 @@ def update_ct(
             )
 
         case _:
-            raise exceptions.CiphertextUpdateError
+            raise ValueError
 
 
 def _update_ct(

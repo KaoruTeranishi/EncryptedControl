@@ -8,7 +8,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 import eclib.randutils as ru
-from eclib import exceptions, regev
+from eclib import regev
 from eclib.regev import PublicKey, SecretKey
 
 
@@ -71,7 +71,7 @@ def encrypt(
             )
 
         case _:
-            raise exceptions.EncryptionError
+            raise ValueError
 
 
 def decrypt(
@@ -99,7 +99,7 @@ def decrypt(
             )
 
         case _:
-            raise exceptions.DecryptionError
+            raise ValueError
 
 
 def add(
@@ -131,10 +131,10 @@ def add(
                 )
 
             case _:
-                raise exceptions.HomomorphicOperationError
+                raise ValueError
 
     else:
-        raise exceptions.HomomorphicOperationError
+        raise ValueError
 
 
 def elementwise_add(
@@ -158,7 +158,7 @@ def elementwise_add(
         )
 
     else:
-        raise exceptions.HomomorphicOperationError
+        raise ValueError
 
 
 def mult(
@@ -218,7 +218,7 @@ def mult(
             return c_m
 
         case _:
-            raise exceptions.HomomorphicOperationError
+            raise ValueError
 
 
 def elementwise_mult(
@@ -256,7 +256,7 @@ def elementwise_mult(
             )
 
         case _:
-            raise exceptions.HomomorphicOperationError
+            raise ValueError
 
 
 def int_mult(
@@ -316,7 +316,7 @@ def int_mult(
             return c_m
 
         case _:
-            raise exceptions.HomomorphicOperationError
+            raise ValueError
 
 
 def elementwise_int_mult(
@@ -354,7 +354,7 @@ def elementwise_int_mult(
             )
 
         case _:
-            raise exceptions.HomomorphicOperationError
+            raise ValueError
 
 
 def encode(params: PublicParameters, x: ArrayLike, delta: float) -> ArrayLike:
@@ -433,10 +433,10 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
     m = floor(x / delta + 0.5)
 
     if m < -((params.q - 1) // 2):
-        raise exceptions.EncodingError("Underflow")
+        raise ValueError("Underflow")
 
     elif m > (params.q // 2):
-        raise exceptions.EncodingError("Overflow")
+        raise ValueError("Overflow")
 
     else:
         return m % params.q
