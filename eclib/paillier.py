@@ -6,7 +6,6 @@ from math import floor, gcd
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-import eclib.modutils as mu
 import eclib.primeutils as pu
 import eclib.randutils as ru
 from eclib import exceptions
@@ -322,4 +321,4 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
 
 
 def _decode(params: PublicParameters, m: int, delta: float) -> float:
-    return mu.min_residue(m, params.n) * delta
+    return (m - floor(m / params.n + 0.5) * params.n) * delta

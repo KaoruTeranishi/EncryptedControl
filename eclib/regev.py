@@ -7,7 +7,6 @@ from typing import Optional
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-import eclib.modutils as mu
 import eclib.randutils as ru
 from eclib import exceptions
 
@@ -359,4 +358,4 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
 
 
 def _decode(params: PublicParameters, m: int, delta: float) -> float:
-    return mu.min_residue(m, params.t) * delta
+    return (m - floor(m / params.t + 0.5) * params.t) * delta
