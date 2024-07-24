@@ -16,7 +16,7 @@ def get_rand_bits(bit_length: int) -> int:
     return get_rand(pow(2, bit_length - 1), pow(2, bit_length))
 
 
-def get_int_gaussian(mean: int, std: int, dim: int = 1) -> int | list[int]:
+def get_int_gaussian(mean: int, std: float, dim: int = 1) -> int | list[int]:
     if dim == 1:
         return floor(np.random.normal(mean, std) + 0.5)
     else:
