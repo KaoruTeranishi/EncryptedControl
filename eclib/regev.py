@@ -53,8 +53,8 @@ class PublicKey:
     def __init__(self, params: PublicParameters, sk: SecretKey):
         self.A = np.array(
             [
-                [ru.get_rand(0, params.q) for _ in range(params.n)]
-                for _ in range(params.m)
+                [ru.get_rand(0, params.q) for _ in range(params.m)]
+                for _ in range(params.n)
             ],
             dtype=object,
         )
@@ -64,9 +64,9 @@ class PublicKey:
             dtype=object,
         ).reshape(-1, 1)
 
-        self.b = (self.A @ sk.s + e) % params.q
+        self.b = (sk.s.T @ self.A + e.T) % params.q
 
-        self.B = np.block([self.A, self.b])
+        self.B = np.block([[self.b], [self.A]])
 
 
 def keygen(n, t, q, sigma, m=None):
@@ -112,7 +112,7 @@ def decrypt(
 ) -> ArrayLike:
     c = np.asarray(c, dtype=object)
 
-    match c.ndim - 1:
+    match c.ndim - 2:
         case 0:
             return _decrypt(params, sk, c)
 
@@ -144,7 +144,7 @@ def add(
     c2 = np.asarray(c2, dtype=object)
 
     if c1.shape == c2.shape:
-        match c1.ndim - 1:
+        match c1.ndim - 2:
             case 0:
                 return _add(params, c1, c2)
 
@@ -181,7 +181,7 @@ def elementwise_add(
     if c1.shape == c2.shape:
         return add(params, c1, c2)
 
-    elif c1.ndim - 1 == 2 and c1.shape[1] == c2.shape[0]:
+    elif c1.ndim - 2 == 2 and c1.shape[1] == c2.shape[0]:
         return np.array(
             [
                 [_add(params, c1[i][j], c2[j]) for j in range(c1.shape[1])]
@@ -201,16 +201,16 @@ def int_mult(
     c = np.asarray(c, dtype=object)
 
     match m.ndim:
-        case 0 if c.ndim - 1 == 0:
+        case 0 if c.ndim - 2 == 0:
             return _int_mult(params, m.item(), c)
 
-        case 0 if c.ndim - 1 == 1:
+        case 0 if c.ndim - 2 == 1:
             return np.array(
                 [_int_mult(params, m.item(), c[i]) for i in range(c.shape[0])],
                 dtype=object,
             )
 
-        case 0 if c.ndim - 1 == 2:
+        case 0 if c.ndim - 2 == 2:
             return np.array(
                 [
                     [_int_mult(params, m.item(), c[i][j]) for j in range(c.shape[1])]
@@ -219,16 +219,16 @@ def int_mult(
                 dtype=object,
             )
 
-        case 1 if c.ndim - 1 == 1 and m.shape[0] == c.shape[0]:
-            c_s = np.zeros(params.n + 1, dtype=object)
+        case 1 if c.ndim - 2 == 1 and m.shape[0] == c.shape[0]:
+            c_s = np.zeros([params.n + 1, 1], dtype=object)
 
             for i in range(m.shape[0]):
                 c_s = _add(params, c_s, _int_mult(params, m[i], c[i]))
 
             return c_s
 
-        case 2 if c.ndim - 1 == 1 and m.shape[1] == c.shape[0]:
-            c_v = np.zeros([m.shape[0], params.n + 1], dtype=object)
+        case 2 if c.ndim - 2 == 1 and m.shape[1] == c.shape[0]:
+            c_v = np.zeros([m.shape[0], params.n + 1, 1], dtype=object)
 
             for i in range(m.shape[0]):
                 for j in range(m.shape[1]):
@@ -236,8 +236,8 @@ def int_mult(
 
             return c_v
 
-        case 2 if c.ndim - 1 == 2 and m.shape[1] == c.shape[0]:
-            c_m = np.zeros([m.shape[0], c.shape[1], params.n + 1], dtype=object)
+        case 2 if c.ndim - 2 == 2 and m.shape[1] == c.shape[0]:
+            c_m = np.zeros([m.shape[0], c.shape[1], params.n + 1, 1], dtype=object)
 
             for i in range(m.shape[0]):
                 for j in range(c.shape[1]):
@@ -262,13 +262,13 @@ def elementwise_int_mult(
         case 0:
             return int_mult(params, m.item(), c)
 
-        case 1 if c.ndim - 1 == 1 and m.shape[0] == c.shape[0]:
+        case 1 if c.ndim - 2 == 1 and m.shape[0] == c.shape[0]:
             return np.array(
                 [_int_mult(params, m[i], c[i]) for i in range(m.shape[0])],
                 dtype=object,
             )
 
-        case 2 if c.ndim - 1 == 1 and m.shape[1] == c.shape[0]:
+        case 2 if c.ndim - 2 == 1 and m.shape[1] == c.shape[0]:
             return np.array(
                 [
                     [_int_mult(params, m[i][j], c[j]) for j in range(m.shape[1])]
@@ -277,7 +277,7 @@ def elementwise_int_mult(
                 dtype=object,
             )
 
-        case 2 if c.ndim - 1 == 2 and m.shape[1] == c.shape[0]:
+        case 2 if c.ndim - 2 == 2 and m.shape[1] == c.shape[0]:
             return np.array(
                 [
                     [_int_mult(params, m[i][j], c[i][j]) for j in range(m.shape[1])]
@@ -314,20 +314,19 @@ def dec(
 
 def _encrypt(params: PublicParameters, pk: PublicKey, m: int) -> NDArray[np.object_]:
     r = np.array([[ru.get_rand(0, 2)] for _ in range(params.m)], dtype=object)
-    c = (
-        r.T @ pk.B
+
+    return (
+        pk.B @ r
         + floor(params.q / params.t)
         * m
-        * np.block([np.zeros([1, params.n], dtype=object), 1])
+        * np.block([[1], [np.zeros([params.n, 1], dtype=object)]])
     ) % params.q
-
-    return c.reshape(-1)
 
 
 def _decrypt(params: PublicParameters, sk: SecretKey, c: NDArray[np.object_]) -> int:
     return (
         floor(
-            (params.t / params.q) * ((c @ np.block([[-sk.s], [1]])).item() % params.q)
+            (params.t / params.q) * ((np.block([1, -sk.s.T]) @ c).item() % params.q)
             + 0.5
         )
         % params.t
