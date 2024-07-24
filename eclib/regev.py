@@ -17,10 +17,10 @@ class PublicParameters:
     n: int
     t: int
     q: int
-    sigma: int
+    sigma: float
     m: int
 
-    def __init__(self, n: int, t: int, q: int, sigma: int, m: Optional[int] = None):
+    def __init__(self, n: int, t: int, q: int, sigma: float, m: Optional[int] = None):
         self.n = n
         self.t = t
         self.q = q
@@ -69,7 +69,7 @@ class PublicKey:
         self.B = np.block([[self.b], [self.A]])
 
 
-def keygen(n, t, q, sigma, m=None):
+def keygen(n: int, t: int, q: int, sigma: float, m: Optional[int] = None):
     params = PublicParameters(n, t, q, sigma, m)
 
     sk = SecretKey(params)

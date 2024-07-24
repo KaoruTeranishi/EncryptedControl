@@ -9,7 +9,7 @@ from numpy.typing import ArrayLike, NDArray
 
 import eclib.modutils as mu
 import eclib.randutils as ru
-from eclib import exceptions
+from eclib import exceptions, regev
 from eclib.regev import PublicKey, SecretKey
 
 
@@ -17,12 +17,12 @@ from eclib.regev import PublicKey, SecretKey
 class PublicParameters:
     n: int
     q: int
-    sigma: int
+    sigma: float
     m: int
     l: int
     N: int
 
-    def __init__(self, n: int, q: int, sigma: int, m: Optional[int] = None):
+    def __init__(self, n: int, q: int, sigma: float, m: Optional[int] = None):
         self.n = n
         self.q = q
         self.sigma = sigma
@@ -36,12 +36,13 @@ class PublicParameters:
             self.m = m
 
 
-def keygen(n, q, sigma, m=None):
+def keygen(n: int, q: int, sigma: float, m: Optional[int] = None):
     params = PublicParameters(n, q, sigma, m)
+    lwe_params = regev.PublicParameters(n, 0, q, sigma, m)
 
-    sk = SecretKey(params)
+    sk = SecretKey(lwe_params)
 
-    pk = PublicKey(params, sk)
+    pk = PublicKey(lwe_params, sk)
 
     return params, pk, sk
 
