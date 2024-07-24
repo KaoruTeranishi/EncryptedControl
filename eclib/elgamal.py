@@ -7,7 +7,6 @@ from typing import Optional
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-import eclib.numutils as nu
 import eclib.primeutils as pu
 import eclib.randutils as ru
 from eclib import exceptions
@@ -25,7 +24,7 @@ class PublicParameters:
 
         else:
             self.q, self.p = pu.get_safe_prime(bit_length)
-            self.g = nu.get_generator(self.q, self.p)
+            self.g = _get_generator(self.q, self.p)
 
 
 @dataclass(slots=True)
@@ -247,15 +246,15 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
 
     if x / delta == int(x / delta) or first_decimal_place >= 5:
         for i in range(params.q):
-            if m - i > 0 and nu.is_element(m - i, params.q, params.p):
+            if m - i > 0 and _is_element(m - i, params.q, params.p):
                 return m - i
-            elif m + i < params.p and nu.is_element(m + i, params.q, params.p):
+            elif m + i < params.p and _is_element(m + i, params.q, params.p):
                 return m + i
     else:
         for i in range(params.q):
-            if m + i < params.p and nu.is_element(m + i, params.q, params.p):
+            if m + i < params.p and _is_element(m + i, params.q, params.p):
                 return m + i
-            elif m - i > 0 and nu.is_element(m - i, params.q, params.p):
+            elif m - i > 0 and _is_element(m - i, params.q, params.p):
                 return m - i
 
     raise exceptions.EncodingError
@@ -267,3 +266,29 @@ def _decode(params: PublicParameters, m: int, delta: float) -> float:
 
     else:
         return m * delta
+
+
+def _is_generator(g: int, q: int, p: int) -> bool:
+    if g <= 1 or g >= p:
+        return False
+    elif pow(g, q, p) == 1:
+        return True
+    else:
+        return False
+
+
+def _is_element(m: int, q: int, p: int) -> bool:
+    if m <= 0 or m >= p:
+        return False
+    elif pow(m, q, p) == 1:
+        return True
+    else:
+        return False
+
+
+def _get_generator(q: int, p: int) -> int:
+    g = 2
+    while _is_generator(g, q, p) is False:
+        g += 1
+
+    return g
