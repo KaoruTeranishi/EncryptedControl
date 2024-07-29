@@ -48,6 +48,12 @@ def decrypt(
     return regev.decrypt(params.lwe_params, sk, c)
 
 
+def decrypt_gsw(
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_]
+) -> ArrayLike:
+    return gsw.decrypt(params.gsw_params, sk, c)
+
+
 def add(
     params: PublicParameters, c1: NDArray[np.object_], c2: NDArray[np.object_]
 ) -> NDArray[np.object_]:
@@ -155,3 +161,9 @@ def dec(
     params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
 ) -> ArrayLike:
     return regev.dec(params.lwe_params, sk, c, delta)
+
+
+def dec_gsw(
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
+) -> ArrayLike:
+    return gsw.dec(params.gsw_params, sk, c, delta)
