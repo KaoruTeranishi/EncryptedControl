@@ -17,9 +17,6 @@ class Token:
 
 
 def keygen(bit_length: int) -> tuple[PublicParameters, PublicKey, SecretKey]:
-    sk = SecretKey(params=None)
-    pk = PublicKey(params=None, sk=None)
-
     params, pk, sk = elgamal.keygen(bit_length)
 
     return params, pk, sk
