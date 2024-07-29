@@ -17,9 +17,7 @@ class Token:
 
 
 def keygen(bit_length: int) -> tuple[PublicParameters, PublicKey, SecretKey]:
-    params, pk, sk = elgamal.keygen(bit_length)
-
-    return params, pk, sk
+    return elgamal.keygen(bit_length)
 
 
 def encrypt(params: PublicParameters, pk: PublicKey, m: int) -> NDArray[np.object_]:
