@@ -20,7 +20,9 @@ def keygen(bit_length: int) -> tuple[PublicParameters, PublicKey, SecretKey]:
     return elgamal.keygen(bit_length)
 
 
-def encrypt(params: PublicParameters, pk: PublicKey, m: int) -> NDArray[np.object_]:
+def encrypt(
+    params: PublicParameters, pk: PublicKey, m: ArrayLike
+) -> NDArray[np.object_]:
     return elgamal.encrypt(params, pk, m)
 
 
