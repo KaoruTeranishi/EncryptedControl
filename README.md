@@ -2,52 +2,74 @@
 
 # ECLib
 
-This is a Python library for numerical simulation of encrypted control.
+ECLib is an easy-to-use open-source homomorphic encryption library for encrypted control.
 
-# Encrypted control
+## Supported encryption schemes
 
-Cybersecurity is a critical issue of networked control systems in a modern society.
-Encrypted control is a novel concept of control using cryptographic tools for secure computation, such as homomorphic encryption and secret sharing.
-ECLib helps researchers and students to implement their new idea of encrypted control using homomorphic encryption.
+- [ElGamal](https://en.wikipedia.org/wiki/ElGamal_encryption)
+- [Dynamic-key ElGamal](https://arxiv.org/abs/2104.12436)
+- [Paillier](https://en.wikipedia.org/wiki/Paillier_cryptosystem)
+- [Regev (LWE)](https://en.wikipedia.org/wiki/Learning_with_errors)
+- [GSW](https://eprint.iacr.org/2013/340)
+- [GSW-LWE](https://eprint.iacr.org/2016/870)
 
-# Supported encryption schemes
-- ElGamal<sup> [1]</sup>
-- Dynamic-key ElGamal<sup> [2]</sup>
-- Paillier<sup> [3]</sup>
-- Regev (LWE)<sup> [4]</sup>
-- GSW<sup> [5]</sup>
-- GSW-LWE<sup> [6]</sup>
+## Requirements
 
-# Installation
+- [Python 3.12.x](https://www.python.org/)
+- [NumPy](https://numpy.org/doc/stable/index.html)
+- [Matplotlib](https://matplotlib.org/)
+- [python-control](https://python-control.readthedocs.io/en/0.10.0/)
 
-Run pip command on your terminal.
+# Getting Started
 
-`pip install eclib`
+1. Install ECLib.
 
-# Usage
+    `pip install eclib`
 
-See [tutorial_slide_1.pdf](https://github.com/KaoruTeranishi/EncryptedControl/blob/master/doc/tutorial_slide_1.pdf), [tutorial_slide_2.pdf](https://github.com/KaoruTeranishi/EncryptedControl/blob/master/doc/tutorial_slide_2.pdf), and [example codes](https://github.com/KaoruTeranishi/EncryptedControl/tree/master/examples).
+2. Run example scripts.
+
+# Examples
+
+- elgamal.py
+
+    Basics of ElGamal encryption.
+
+- dyn_elgamal.py
+
+    Basics of Dynamic-key ElGamal encryption.
+
+- paillier.py
+
+    Basics of Paillier encryption.
+
+- regev.py
+
+    Basics of Regev (LWE) encryption.
+
+- gsw.py
+
+    Basics of GSW encryption.
+
+- gsw_lwe.py
+
+    Basics of GSW-LWE encryption.
+
+- state_feedback.py
+
+    Comparison of plant inputs and states between unencrypted and encrypted state-feedback controls.
+    To run this script, you must specify an encryption scheme for encrypting a state-feedback controller, e.g., `python state_feedback.py elgamal`.
+
+- pi.py
+
+    Comparison of plant inputs and outputs between unencrypted and encrypted PI controls.
+    Similar to state_feedback.py, you must specify an encryption scheme for encrypting a state-feedback controller, e.g., `python pi.py paillier`.
 
 # License
 
-BSD License 2.0
+MIT license
 
 # Author
 
 Kaoru Teranishi
-- E-mail: teranishi (at) uec.ac.jp
+- E-mail: teranishi (at) utexas.edu
 - Homepage: [https://kaoruteranishi.xyz](https://kaoruteranishi.xyz)
-
-# References
-
-[1] T. Elgamal, "A public key cryptosystem and a signature scheme based on discrete logarithms," IEEE Transactions on Information Theory, vol. 31, no. 4, pp. 469–472, 1985.
-
-[2] K. Teranishi, T. Sadamoto, A. Chakrabortty, and K. Kogiso, "Designing optimal key lengths and control laws for encrypted control systems based on sample identifying complexity and deciphering time," IEEE Transactions on Automatic Control (Early access)
-
-[3] P. Paillier, "Public-key cryptosystems based on composite degree residuosity classes," in International Conference on Theory and Application of Cryptographic Techniques, 1999, pp. 223–238.
-
-[4] O. Regev, "On lattices, learning with errors, random linear codes, and cryptography," Journal of the ACM, vol. 56, no. 6, pp. 1-40, 2009.
-
-[5] C. Gentry, A. Sahai, and B. Waters, "Homomorphic encryption from learning with errors: Conceptually-simpler, asymptotically-faster, attribute-based," Cryptology ePrint Archive, Paper 2013/340, 2013.
-
-[6] J. Kim, H. Shim, and K. Han, "Dynamic controller that operates over homomorphically encrypted data for infinite time horizon," IEEE Transactions on Automatic Control, vol. 68, no. 2, pp. 660–672, 2023.
