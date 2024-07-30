@@ -71,5 +71,5 @@ MIT license
 # Author
 
 Kaoru Teranishi
-- E-mail: teranishi (at) utexas.edu
+- E-mail: kaoruteranishi1005 (at) gmail.com
 - Homepage: [https://kaoruteranishi.xyz](https://kaoruteranishi.xyz)
