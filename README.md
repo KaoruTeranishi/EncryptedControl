@@ -62,7 +62,7 @@ ECLib is an easy-to-use open-source homomorphic encryption library for encrypted
 - pi.py
 
     Comparison of plant inputs and outputs between unencrypted and encrypted PI controls.
-    Similar to state_feedback.py, you must specify an encryption scheme for encrypting a state-feedback controller, e.g., `python pi.py paillier`.
+    Similar to state_feedback.py, you must specify an encryption scheme for encrypting a PI controller, e.g., `python pi.py paillier`.
 
 # License
 
