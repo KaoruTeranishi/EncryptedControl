@@ -207,6 +207,7 @@ def encrypt(
         ValueError: If the plaintext is not a scalar, vector, or matrix.
 
     See Also:
+        decrypt
         enc
     """
 
@@ -253,6 +254,7 @@ def decrypt(
         ValueError: If the ciphertext is not a scalar, vector, or matrix.
 
     See Also:
+        encrypt
         dec
     """
 
@@ -366,6 +368,7 @@ def encode(params: PublicParameters, x: ArrayLike, delta: float) -> ArrayLike:
 
     See Also:
         decode
+        enc
     """
 
     f = np.frompyfunc(_encode, 3, 1)
@@ -386,6 +389,7 @@ def decode(params: PublicParameters, m: ArrayLike, delta: float) -> ArrayLike:
 
     See Also:
         encode
+        dec
     """
 
     f = np.frompyfunc(_decode, 3, 1)
