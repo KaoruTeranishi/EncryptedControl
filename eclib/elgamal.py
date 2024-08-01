@@ -4,9 +4,10 @@
 elgamal.py
 
 This module implements the ElGamal encryption scheme, which is a public-key
-cryptosystem based on the Diffie-Hellman key exchange. It provides functionalities
-for generating public parameters, public and secret keys, encryption, decryption,
-and homomorphic operations.
+cryptosystem based on the Decisional Diffie-Hellman (DDH) assumption. It provides
+functionalities for generating public parameters, public and secret keys, encryption,
+decryption, and homomorphic operations (multiplication). It also includes functions for
+encoding and decoding floating-point data into and from plaintexts.
 
 Classes:
     PublicParameters: Represents public parameters of the ElGamal encryption scheme.
@@ -17,7 +18,8 @@ Functions:
     keygen: Generates public parameters, a public key, and a secret key.
     encrypt: Encrypts a scalar, vector, or matrix plaintext using a public key.
     decrypt: Decrypts a scalar, vector, or matrix ciphertext using a secret key.
-    mult: Computes the Hadamard product of two ciphertexts.
+    mult: Computes a ciphertext of the Hadamard product of two scalar, vector, or matrix
+        plaintexts.
     encode: Encodes a scalar, vector, or matrix floating-point data into a plaintext.
     decode: Decodes a scalar, vector, or matrix plaintext into floating-point data.
     enc: Encrypts and encodes a scalar, vector, or matrix floating-point data.
@@ -48,26 +50,24 @@ class PublicParameters:
     Represents public parameters of the ElGamal encryption scheme.
 
     Attributes:
-    p: int
-        Prime number representing the modulus of a cyclic group used as the plaintext
-        space.
-    q: int
-        Prime number representing the order of the cyclic group.
-    g: int
-        Generator of the cyclic group.
+        p (int): Prime number representing the modulus of a cyclic group used as the
+            plaintext space.
+        q (int): Prime number representing the order of the cyclic group.
+        g (int): Generator of the cyclic group.
     """
 
     p: int
     q: int
     g: int
 
-    def __init__(self, bit_length: Optional[int]):
+    def __init__(self, bit_length: Optional[int] = None):
         """
         Initializes a new PublicParameters object.
 
         Args:
-            bit_length (Optional[int]): The desired bit length for a prime number
-                representing the order of a cyclic group used as the plaintext space.
+            bit_length (int, optional, default = None): Desired bit length for a prime
+            number representing the order of a cyclic group used as the plaintext
+            space.
 
         Note:
             If `bit_length` is None, the public parameters will be initialized with
@@ -90,19 +90,18 @@ class SecretKey:
     Represents a secret key of the ElGamal encryption scheme.
 
     Attributes:
-    s: int
-        Secret key value.
+        s (int): Secret key value.
     """
 
     s: int
 
-    def __init__(self, params: Optional[PublicParameters]):
+    def __init__(self, params: Optional[PublicParameters] = None):
         """
         Initializes a new SecretKey object.
 
         Args:
-            params (Optional[PublicParameters]): Cryptosystem parameters used for
-                computing the secret key.
+            params (PublicParameters, optional, default = None): Cryptosystem
+            parameters used for computing the secret key.
 
         Note:
             If `params` is None, the secret key will be initialized with a value of 0.
@@ -127,20 +126,22 @@ class PublicKey:
     Represents a public key of the ElGamal encryption scheme.
 
     Attributes:
-    h: int
-        Public key value.
+        h (int): Public key value.
     """
 
     h: int
 
-    def __init__(self, params: Optional[PublicParameters], sk: Optional[SecretKey]):
+    def __init__(
+        self, params: Optional[PublicParameters] = None, sk: Optional[SecretKey] = None
+    ):
         """
         Initializes a new PublicKey object.
 
         Args:
-            params (Optional[PublicParameters]): Cryptosystem parameters used for
-                computing the public key.
-            sk (Optional[SecretKey]): Secret key used for computing the public key.
+            params (PublicParameters, optional, default = None): Cryptosystem
+            parameters used for computing the public key.
+            sk (SecretKey, optional, default = None): Secret key used for computing
+            the public key.
 
         Note:
             If `params` or `sk` is None, the public key will be initialized with a
@@ -296,9 +297,9 @@ def mult(
         NDArray[np.object_]: Ciphertext of the product of the plaintexts.
 
     Raises:
-        ValueError: If the ciphertexts are not following the types: scalar-scalar,
-            scalar-vector, scalar-matrix, vector-vector, matrix-vector, or
-            matrix-matrix.
+        ValueError: If the ciphertexts are not the following types of appropriate
+            sizes: scalar-scalar, scalar-vector, scalar-matrix, vector-vector,
+            matrix-vector, or matrix-matrix.
     """
 
     c1 = np.asarray(c1, dtype=object)
@@ -395,7 +396,7 @@ def enc(
     params: PublicParameters, pk: PublicKey, x: ArrayLike, delta: float
 ) -> NDArray[np.object_]:
     """
-    Encrypts and encodes a scalar, vector, or matrix floating-point data `x` using a
+    Encodes and encrypts a scalar, vector, or matrix floating-point data `x` using a
     public key `pk`.
 
     Args:
