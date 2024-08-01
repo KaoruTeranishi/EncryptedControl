@@ -204,7 +204,7 @@ def encrypt(
         NDArray[np.object_]: Ciphertext of the plaintext.
 
     Raises:
-        ValueError: If the plaintext is not scalar, vector, or matrix.
+        ValueError: If the plaintext is not a scalar, vector, or matrix.
 
     See Also:
         enc
@@ -250,7 +250,7 @@ def decrypt(
         ArrayLike: Decrypted plaintext.
 
     Raises:
-        ValueError: If the ciphertext is not scalar, vector, or matrix.
+        ValueError: If the ciphertext is not a scalar, vector, or matrix.
 
     See Also:
         dec
@@ -459,7 +459,7 @@ def dec_add(
             the decrypted plaintext.
 
     Raises:
-        ValueError: If the ciphertext is not scalar, vector, or matrix.
+        ValueError: If the ciphertext is not a scalar, vector, or matrix.
 
     See Also:
         dec
