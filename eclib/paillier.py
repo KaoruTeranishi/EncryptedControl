@@ -697,7 +697,6 @@ def _decode(params: PublicParameters, m: int, delta: float) -> float:
 
     Returns:
         float: Decoded floating-point number.
-
     """
 
     return (m - floor(m / params.n + 0.5) * params.n) * delta
