@@ -3,9 +3,9 @@
 """
 randutils.py
 
-This module provides utility functions for generating random numbers. The module includes
-functions for generating random integers in a specified range, random integers with a
-specified number of bits, and random integers sampled from a discrete Gaussian
+This module provides utility functions for generating random numbers. The module
+includes functions for generating random integers in a specified range, random integers
+with a specified number of bits, and random integers sampled from a discrete Gaussian
 distribution.
 
 Functions:
