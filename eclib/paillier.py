@@ -38,7 +38,6 @@ Dependencies:
     numpy: Fundamental package for scientific computing with Python.
     eclib.primeutils: Utility functions for generating prime numbers.
     eclib.randutils: Utility functions for generating random numbers.
-
 """
 
 from dataclasses import dataclass
