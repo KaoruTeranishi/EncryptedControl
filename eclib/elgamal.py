@@ -1,5 +1,36 @@
 #! /usr/bin/env python3
 
+"""
+elgamal.py
+
+This module implements the ElGamal encryption scheme, which is a public-key
+cryptosystem based on the Diffie-Hellman key exchange. It provides functionalities
+for generating public parameters, public and secret keys, encryption, decryption,
+and homomorphic operations.
+
+Classes:
+    PublicParameters: Represents public parameters of the ElGamal encryption scheme.
+    SecretKey: Represents a secret key of the ElGamal encryption scheme.
+    PublicKey: Represents a public key of the ElGamal encryption scheme.
+
+Functions:
+    keygen: Generates public parameters, a public key, and a secret key.
+    encrypt: Encrypts a scalar, vector, or matrix plaintext using a public key.
+    decrypt: Decrypts a scalar, vector, or matrix ciphertext using a secret key.
+    mult: Computes the Hadamard product of two ciphertexts.
+    encode: Encodes a scalar, vector, or matrix floating-point data into a plaintext.
+    decode: Decodes a scalar, vector, or matrix plaintext into floating-point data.
+    enc: Encrypts and encodes a scalar, vector, or matrix floating-point data.
+    dec: Decrypts and decodes a scalar, vector, or matrix ciphertext.
+    dec_add: Decrypts and computes the sum of row-wise elements of a ciphertext.
+
+Dependencies:
+    numpy: Fundamental package for scientific computing with Python.
+    numpy.typing: Type hints for NumPy.
+    eclib.primeutils: Utility functions for generating prime numbers.
+    eclib.randutils: Utility functions for generating random numbers.
+"""
+
 from dataclasses import dataclass
 from math import floor
 from typing import Optional
