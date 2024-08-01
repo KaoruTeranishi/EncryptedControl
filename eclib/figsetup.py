@@ -25,6 +25,12 @@ def figure_setup() -> None:
 
     This function sets various parameters for the figure, such as size, font, axis
     style, legend style, and grid.
+
+    Args:
+        None
+
+    Returns:
+        None
     """
 
     # size
