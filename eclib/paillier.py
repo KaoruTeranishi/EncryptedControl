@@ -36,6 +36,7 @@ Functions:
 
 Dependencies:
     numpy: Fundamental package for scientific computing with Python.
+    numpy.typing: Type hints for NumPy.
     eclib.primeutils: Utility functions for generating prime numbers.
     eclib.randutils: Utility functions for generating random numbers.
 """
