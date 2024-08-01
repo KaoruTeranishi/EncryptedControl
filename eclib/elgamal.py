@@ -284,16 +284,16 @@ def mult(
     params: PublicParameters, c1: NDArray[np.object_], c2: NDArray[np.object_]
 ) -> NDArray[np.object_]:
     """
-    Computes the Hadamard product of two scalar, vector, or matrix ciphertexts `c1` and
-    `c2`.
+    Computes a ciphertext of the Hadamard product of two scalar, vector, or matrix
+    plaintexts corresponding to ciphertexts `c1` and `c2`.
 
     Args:
         params (PublicParameters): Cryptosystem parameters.
-        c1 (NDArray[np.object_]): The first ciphertext to be multiplied.
-        c2 (NDArray[np.object_]): The second ciphertext to be multiplied.
+        c1 (NDArray[np.object_]): Ciphertext of the first plaintext.
+        c2 (NDArray[np.object_]): Ciphertext of the second plaintext.
 
     Returns:
-        NDArray[np.object_]: Result of the Hadamard product of the ciphertexts.
+        NDArray[np.object_]: Ciphertext of the product of the plaintexts.
 
     Raises:
         ValueError: If the ciphertexts are not following the types: scalar-scalar,
@@ -521,15 +521,16 @@ def _mult(
     params: PublicParameters, c1: NDArray[np.object_], c2: NDArray[np.object_]
 ) -> NDArray[np.object_]:
     """
-    Computes the Hadamard product of two ciphertexts `c1` and `c2`.
+    Computes a ciphertext of the product of two plaintexts corresponding to ciphertexts
+    `c1` and `c2`.
 
     Args:
         params (PublicParameters): Cryptosystem parameters.
-        c1 (NDArray[np.object_]): The first ciphertext to be multiplied.
-        c2 (NDArray[np.object_]): The second ciphertext to be multiplied.
+        c1 (NDArray[np.object_]): Ciphertext of the first plaintext.
+        c2 (NDArray[np.object_]): Ciphertext of the second plaintext.
 
     Returns:
-        NDArray[np.object_]: Result of the Hadamard product of the ciphertexts.
+        NDArray[np.object_]: Ciphertext of the product of the plaintexts.
     """
 
     return np.array(
