@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 """
-regev.py
+gsw.py
 
 This module implements the GSW encryption scheme, which is a fully homomorphic
 encryption scheme based on the Learning with Errors (LWE) problem. It provides
