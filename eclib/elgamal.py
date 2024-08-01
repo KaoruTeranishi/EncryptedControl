@@ -43,10 +43,10 @@ class PublicKey:
     h: int
 
     def __init__(self, params: Optional[PublicParameters], sk: Optional[SecretKey]):
-        if params is None and sk is None:
+        if params is None or sk is None:
             self.h = 0
 
-        elif params is not None and sk is not None:
+        else:
             self.h = pow(params.g, sk.s, params.p)
 
 
@@ -238,8 +238,10 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
     if m < 0:
         if m < -params.q:
             raise ValueError("Underflow")
+
         else:
             m += params.p
+
     elif m > params.q:
         raise ValueError("Overflow")
 
@@ -247,12 +249,15 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
         for i in range(params.q):
             if m - i > 0 and _is_element(m - i, params.q, params.p):
                 return m - i
+
             elif m + i < params.p and _is_element(m + i, params.q, params.p):
                 return m + i
+
     else:
         for i in range(params.q):
             if m + i < params.p and _is_element(m + i, params.q, params.p):
                 return m + i
+
             elif m - i > 0 and _is_element(m - i, params.q, params.p):
                 return m - i
 
@@ -270,8 +275,10 @@ def _decode(params: PublicParameters, m: int, delta: float) -> float:
 def _is_generator(g: int, q: int, p: int) -> bool:
     if g <= 1 or g >= p:
         return False
+
     elif pow(g, q, p) == 1:
         return True
+
     else:
         return False
 
@@ -279,8 +286,10 @@ def _is_generator(g: int, q: int, p: int) -> bool:
 def _is_element(m: int, q: int, p: int) -> bool:
     if m <= 0 or m >= p:
         return False
+
     elif pow(m, q, p) == 1:
         return True
+
     else:
         return False
 
