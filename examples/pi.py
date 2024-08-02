@@ -3,9 +3,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-import eclib.figsetup
-from eclib import dyn_elgamal, elgamal, gsw, gsw_lwe, paillier, regev, system
-from eclib.colors import Colors
+from eclib import dyn_elgamal, elgamal, figure, gsw, gsw_lwe, paillier, regev, system
 
 args = sys.argv
 
@@ -200,8 +198,8 @@ for k in range(len(t)):
 
 
 # figure
-eclib.figsetup.figure_setup()
-orange, blue = Colors.orange, Colors.blue
+figure.setup()
+orange, blue = figure.Colors.orange, figure.Colors.blue
 
 plt.figure()
 plt.step(t, u_, linestyle="-", color=blue, linewidth=1.0, label="encrypted")
