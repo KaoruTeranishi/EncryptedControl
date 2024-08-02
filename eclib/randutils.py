@@ -17,7 +17,7 @@ Functions:
 Dependencies:
     numpy: Fundamental package for scientific computing with Python.
 
-Notes:
+Note:
     The module uses the secrets module for generating cryptographically strong random
     numbers.
 """

@@ -36,7 +36,7 @@ def is_prime(n: int, k: int = 50) -> bool:
     Returns:
         bool: True if `n` is a prime number, False otherwise.
 
-    Notes:
+    Note:
         The function uses the Miller-Rabin primality test to check if `n` is a prime
         number. The test is probabilistic and has a probability of failure less than
         4^(-k).
