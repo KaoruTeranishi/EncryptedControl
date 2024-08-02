@@ -1,5 +1,32 @@
 #! /usr/bin/env python3
 
+"""
+system.py
+
+This module defines classes for a control system, including a plant, sensor, actuator,
+operator, and controller. The classes represent the components of a control system and
+provide methods for fundamental operations in control systems. The classes also include
+methods for encrypted control systems using various encryption schemes.
+
+Classes:
+    Plant: Represents a plant in a control system.
+    Operator: Represents an operator in a control system.
+    Sensor: Represents a sensor in a control system.
+    Actuator: Represents an actuator in a control system.
+    Controller: Represents a controller in a control system.
+    EncController: Represents an encrypted controller in a control system.
+
+Dependencies:
+    numpy: Fundamental package for scientific computing with Python.
+    numpy.typing: Type hints for NumPy.
+    eclib.elgamal: ElGamal encryption scheme.
+    eclib.dyn_elgamal: Dynamic-key ElGamal encryption scheme.
+    eclib.paillier: Paillier encryption scheme.
+    eclib.regev: Regev encryption scheme.
+    eclib.gsw: GSW encryption scheme.
+    eclib.gsw_lwe: GSW-LWE encryption scheme.
+"""
+
 from typing import Optional
 
 import numpy as np
@@ -9,6 +36,30 @@ from eclib import dyn_elgamal, elgamal, gsw, gsw_lwe, paillier, regev
 
 
 class Plant:
+    """
+    Represents a plant in a control system.
+
+    Attributes:
+        A (NDArray): State matrix.
+        B (NDArray): Input matrix.
+        C (NDArray): Output matrix.
+        D (NDArray): Feedforward matrix.
+        state (NDArray): Current state.
+        input (NDArray): Current input.
+        output (NDArray): Current output.
+
+    Methods:
+        update: Updates the state of the plant.
+        reset: Resets the state, input, and output of the plant.
+
+    Note:
+        The plant is modeled as a linear time-invariant system with state-space
+        representation:
+            x(t + 1) = A x(t) + B u(t)
+                y(t) = C x(t) + D u(t)
+        where x is the state, u is the input, and y is the output.
+    """
+
     def __init__(
         self,
         A: ArrayLike,
@@ -17,6 +68,36 @@ class Plant:
         D: ArrayLike,
         x0: Optional[ArrayLike] = None,
     ):
+        """
+        Initialize a new Plant object.
+
+        args:
+            A (ArrayLike): State matrix.
+            B (ArrayLike): Input matrix.
+            C (ArrayLike): Output matrix.
+            D (ArrayLike): Feedforward matrix.
+            x0 (ArrayLike, optional, default = None): Initial state.
+
+        Raises:
+            ValueError: If the dimensions of the matrices or state are invalid.
+
+        Note:
+            The dimensions of the matrices must satisfy the following conditions:
+                - A: (n, n)
+                - B: (n, m)
+                - C: (l, n)
+                - D: (l, m)
+            where n is a state dimension, m is an input dimension, and l is an output
+            dimension.
+
+            If the matrices are 1D arrays, they are reshaped to 2D arrays with a single
+            row or column as necessary. If the state is a 2D array with a single column,
+            it is reshaped to a 1D array.
+
+            If the initial state is not provided, it is set to a zero vector of the same
+            dimension as the state matrix A.
+        """
+
         A_ = np.asarray(A, dtype=np.float64)
 
         match A_.ndim:
@@ -99,6 +180,13 @@ class Plant:
         self.output = np.zeros(self.C.shape[0], dtype=np.float64)
 
     def update(self) -> None:
+        """
+        Updates the state of the plant based on the current state and input.
+
+        Returns:
+            None
+        """
+
         self.state = self.A @ self.state + self.B @ self.input
 
     def reset(
@@ -107,6 +195,28 @@ class Plant:
         input: Optional[ArrayLike] = None,
         output: Optional[ArrayLike] = None,
     ) -> None:
+        """
+        Resets the state, input, and output of the plant.
+
+        Args:
+            state (ArrayLike, optional, default = None): New state.
+            input (ArrayLike, optional, default = None): New input.
+            output (ArrayLike, optional, default = None): New output.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the dimensions of the state, input, or output are invalid.
+
+        Note:
+            The dimensions of the state, input, and output must match the dimensions of
+            the state matrix A, input matrix B, and output matrix C, respectively.
+
+            If the state, input, or output is not provided, it is set to a zero vector
+            of the appropriate dimension.
+        """
+
         if state is None:
             self.state = np.zeros(self.A.shape[0], dtype=np.float64)
 
@@ -166,6 +276,32 @@ class Plant:
 
 
 class Operator:
+    """
+    Represents an operator in a control system who gives an encrypted reference to an
+    encrypted controller.
+
+    Attributes:
+        scheme (str or None): Encryption scheme used by the operator.
+        params (elgamal.PublicParameters
+            or dyn_elgamal.PublicParameters
+            or paillier.PublicParameters
+            or regev.PublicParameters
+            or gsw.PublicParameters
+            or gsw_lwe.PublicParameters
+            or None): Cryptosystem parameters of the encryption scheme.
+        pk (elgamal.PublicKey
+            or dyn_elgamal.PublicKey
+            or paillier.PublicKey
+            or regev.PublicKey
+            or gsw.PublicKey
+            or gsw_lwe.PublicKey
+            or None): Public key of the encryption scheme.
+        delta (float or None): Scaling factor.
+
+    Methods:
+        get_enc_reference: Encrypts a reference using the specified encryption scheme.
+    """
+
     def __init__(
         self,
         scheme: Optional[str] = None,
@@ -187,12 +323,63 @@ class Operator:
         ] = None,
         delta: Optional[float] = None,
     ):
+        """
+        Initialize a new Operator object.
+
+        Args:
+            scheme (str, optional, default = None): Encryption scheme used by the
+                operator.
+            params (elgamal.PublicParameters
+                or dyn_elgamal.PublicParameters
+                or paillier.PublicParameters
+                or regev.PublicParameters
+                or gsw.PublicParameters
+                or gsw_lwe.PublicParameters
+                or None, optional, default = None): Cryptosystem parameters of the
+                encryption scheme.
+            pk (elgamal.PublicKey
+                or dyn_elgamal.PublicKey
+                or paillier.PublicKey
+                or regev.PublicKey
+                or gsw.PublicKey
+                or gsw_lwe.PublicKey
+                or None, optional, default = None): Public key of the encryption
+                scheme.
+            delta (float, optional, default = None): Scaling factor.
+
+        Returns:
+            None
+
+        Note:
+            The encryption scheme must be one of the following:
+                - "elgamal"
+                - "dyn_elgamal"
+                - "paillier"
+                - "regev"
+                - "gsw"
+                - "gsw_lwe"
+        """
+
         self.scheme = scheme
         self.params = params
         self.pk = pk
         self.delta = delta
 
     def get_enc_reference(self, reference: ArrayLike) -> int | NDArray[np.object_]:
+        """
+        Encrypts a reference using the specified encryption scheme.
+
+        Args:
+            reference (ArrayLike): Reference to be encrypted.
+
+        Returns:
+            int or NDArray[np.object_]: Encrypted reference.
+
+        Raises:
+            TypeError: If the encryption scheme, cryptosystem parameters, public key, or
+                scaling factor is invalid.
+        """
+
         if not isinstance(self.delta, float):
             raise TypeError
 
@@ -238,6 +425,32 @@ class Operator:
 
 
 class Sensor:
+    """
+    Represents a sensor in a control system.
+
+    Attributes:
+        scheme (str or None): Encryption scheme used by the sensor.
+        params (elgamal.PublicParameters
+            or dyn_elgamal.PublicParameters
+            or paillier.PublicParameters
+            or regev.PublicParameters
+            or gsw.PublicParameters
+            or gsw_lwe.PublicParameters
+            or None): Cryptosystem parameters of the encryption scheme.
+        pk (elgamal.PublicKey
+            or dyn_elgamal.PublicKey
+            or paillier.PublicKey
+            or regev.PublicKey
+            or gsw.PublicKey
+            or gsw_lwe.PublicKey
+            or None): Public key of the encryption scheme.
+        delta (float or None): Scaling factor.
+
+    Methods:
+        get_output: Gets the measurement output of a plant.
+        get_enc_output: Gets and encrypts the measurement output of a plant.
+    """
+
     def __init__(
         self,
         scheme: Optional[str] = None,
@@ -259,12 +472,58 @@ class Sensor:
         ] = None,
         delta: Optional[float] = None,
     ):
+        """
+        Initialize a new Sensor object.
+
+        Args:
+            scheme (str, optional, default = None): Encryption scheme used by the
+                sensor.
+            params (elgamal.PublicParameters
+                or dyn_elgamal.PublicParameters
+                or paillier.PublicParameters
+                or regev.PublicParameters
+                or gsw.PublicParameters
+                or gsw_lwe.PublicParameters
+                or None, optional, default = None): Cryptosystem parameters of the
+                encryption scheme.
+            pk (elgamal.PublicKey
+                or dyn_elgamal.PublicKey
+                or paillier.PublicKey
+                or regev.PublicKey
+                or gsw.PublicKey
+                or gsw_lwe.PublicKey
+                or None, optional, default = None): Public key of the encryption scheme.
+            delta (float, optional, default = None): Scaling factor.
+
+        Returns:
+            None
+
+        Note:
+            The encryption scheme must be one of the following:
+                - "elgamal"
+                - "dyn_elgamal"
+                - "paillier"
+                - "regev"
+                - "gsw"
+                - "gsw_lwe"
+        """
+
         self.scheme = scheme
         self.params = params
         self.pk = pk
         self.delta = delta
 
     def get_output(self, plant: Plant) -> ArrayLike:
+        """
+        Gets the measurement output of a `plant`.
+
+        Args:
+            plant (Plant): Plant whose output is to be measured.
+
+        Returns:
+            ArrayLike: Measurement output of the plant.
+        """
+
         plant.output = plant.C @ plant.state + plant.D @ plant.input
 
         if plant.output.shape[0] == 1:
@@ -274,6 +533,20 @@ class Sensor:
             return plant.output
 
     def get_enc_output(self, plant: Plant) -> int | NDArray[np.object_]:
+        """
+        Gets and encrypts the measurement output of a `plant`.
+
+        Args:
+            plant (Plant): Plant whose output is to be measrured.
+
+        Returns:
+            int or NDArray[np.object_]: Encrypted measurement output of the plant.
+
+        Raises:
+            TypeError: If the encryption scheme, cryptosystem parameters, public key, or
+                scaling factor is invalid.
+        """
+
         plant.output = plant.C @ plant.state + plant.D @ plant.input
 
         if not isinstance(self.delta, float):
@@ -321,6 +594,41 @@ class Sensor:
 
 
 class Actuator:
+    """
+    Represents an actuator in a control system.
+
+    Attributes:
+        scheme (str or None): Encryption scheme used by the actuator.
+        params (elgamal.PublicParameters
+            or dyn_elgamal.PublicParameters
+            or paillier.PublicParameters
+            or regev.PublicParameters
+            or gsw.PublicParameters
+            or gsw_lwe.PublicParameters
+            or None): Cryptosystem parameters of the encryption scheme.
+        pk (elgamal.PublicKey
+            or dyn_elgamal.PublicKey
+            or paillier.PublicKey
+            or regev.PublicKey
+            or gsw.PublicKey
+            or gsw_lwe.PublicKey
+            or None): Public key of the encryption scheme.
+        sk (elgamal.SecretKey
+            or dyn_elgamal.SecretKey
+            or paillier.SecretKey
+            or regev.SecretKey
+            or gsw.SecretKey
+            or gsw_lwe.SecretKey
+            or None): Secret key of the encryption scheme.
+        delta_enc (float or None): Scaling factor for encoding and encryption.
+        delta_dec (float or None): Scaling factor for decoding and decryption.
+
+    Methods:
+        set_input: Sets a control input to a plant.
+        set_enc_input: Decrypts and sets an encrypted control input to a plant.
+        re_enc_state: Re-encrypts the state of a controller.
+    """
+
     def __init__(
         self,
         scheme: Optional[str] = None,
@@ -351,6 +659,52 @@ class Actuator:
         delta_enc: Optional[float] = None,
         delta_dec: Optional[float] = None,
     ):
+        """
+        Initialize a new Actuator object.
+
+        Args:
+            scheme (str, optional, default = None): Encryption scheme used by the
+                actuator.
+            params (elgamal.PublicParameters
+                or dyn_elgamal.PublicParameters
+                or paillier.PublicParameters
+                or regev.PublicParameters
+                or gsw.PublicParameters
+                or gsw_lwe.PublicParameters
+                or None, optional, default = None): Cryptosystem parameters of the
+                encryption scheme.
+            pk (elgamal.PublicKey
+                or dyn_elgamal.PublicKey
+                or paillier.PublicKey
+                or regev.PublicKey
+                or gsw.PublicKey
+                or gsw_lwe.PublicKey
+                or None, optional, default = None): Public key of the encryption scheme.
+            sk (elgamal.SecretKey
+                or dyn_elgamal.SecretKey
+                or paillier.SecretKey
+                or regev.SecretKey
+                or gsw.SecretKey
+                or gsw_lwe.SecretKey
+                or None, optional, default = None): Secret key of the encryption scheme.
+            delta_enc (float, optional, default = None): Scaling factor for encoding and
+                encryption.
+            delta_dec (float, optional, default = None): Scaling factor for decoding and
+                decryption.
+
+        Returns:
+            None
+
+        Note:
+            The encryption scheme must be one of the following:
+                - "elgamal"
+                - "dyn_elgamal"
+                - "paillier"
+                - "regev"
+                - "gsw"
+                - "gsw_lwe"
+        """
+
         self.scheme = scheme
         self.params = params
         self.pk = pk
@@ -359,6 +713,20 @@ class Actuator:
         self.delta_dec = delta_dec
 
     def set_input(self, plant: Plant, input: ArrayLike) -> None:
+        """
+        Set a control input to a `plant`.
+
+        Args:
+            plant (Plant): Plant whose control input is to be set.
+            input (ArrayLike): Control input.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the dimension of the input is invalid.
+        """
+
         u = np.asarray(input, dtype=np.float64)
 
         match u.ndim:
@@ -375,6 +743,20 @@ class Actuator:
                 raise ValueError
 
     def set_enc_input(self, plant: Plant, input: int | NDArray[np.object_]) -> None:
+        """
+        Decrypts and sets an encrypted control input to a `plant`.
+
+        Args:
+            plant (Plant): Plant whose control input is to be set.
+
+        Returns:
+            None
+
+        Raises:
+            TypeError: If the encryption scheme, cryptosystem parameters, public key, or
+                scaling factor is invalid.
+        """
+
         if not isinstance(self.delta_dec, float):
             raise TypeError
 
@@ -463,6 +845,24 @@ class Actuator:
     def re_enc_state(
         self, controller_state: NDArray[np.object_]
     ) -> NDArray[np.object_]:
+        """
+        Re-encrypts a controller state using the specified encryption scheme.
+
+        Args:
+            controller_state (NDArray[np.object_]): Controller state to be re-encrypted.
+
+        Returns:
+            NDArray[np.object_]: Re-encrypted controller state.
+
+        Raises:
+            TypeError: If the encryption scheme, cryptosystem parameters, public key, or
+                scaling factor is invalid.
+
+        Note:
+            This function is used for removing the accumulation of scaling factors in
+            the controller state.
+        """
+
         if not isinstance(self.delta_enc, float) or not isinstance(
             self.delta_dec, float
         ):
@@ -555,6 +955,35 @@ class Actuator:
 
 
 class Controller:
+    """
+    Represents a controller in a control system.
+
+    Attributes:
+        A (NDArray): State matrix.
+        B (NDArray): Input matrix.
+        C (NDArray): Output matrix.
+        D (NDArray): Feedforward matrix.
+        E (NDArray): Reference input matrix.
+        F (NDArray): Reference feedforward matrix.
+        state (NDArray): Current state.
+        input (NDArray): Current input.
+        output (NDArray): Current output.
+        reference (NDArray): Current reference.
+
+    Methods:
+        update: Updates the state of the controller.
+        reset: Resets the state, input, output, and reference of the controller.
+
+    Note:
+        The controller is modeled as a linear time-invariant system with state-space
+        representation:
+            xc(t + 1) = A xc(t) + B y(t) + E r(t)
+                 u(t) = C xc(t) + D y(t) + F r(t)
+        where xc is the controller state, y is the plant output, u is the plant input,
+        and r is the reference. Note that the matrices A, B, C, and D are not the same
+        as those of a plant in general.
+    """
+
     def __init__(
         self,
         A: ArrayLike,
@@ -565,6 +994,43 @@ class Controller:
         F: Optional[ArrayLike] = None,
         x0: Optional[ArrayLike] = None,
     ):
+        """
+        Initialize a new Controller object.
+
+        Args:
+            A (ArrayLike): State matrix.
+            B (ArrayLike): Input matrix.
+            C (ArrayLike): Output matrix.
+            D (ArrayLike): Feedforward matrix.
+            E (ArrayLike, optional, default = None): Reference input matrix.
+            F (ArrayLike, optional, default = None): Reference feedforward matrix.
+            x0 (ArrayLike, optional, default = None): Initial state.
+
+        Raises:
+            ValueError: If the dimensions of the matrices or state are invalid.
+
+        Note:
+            The dimensions of the matrices must satisfy the following conditions:
+                - A: (nc, nc)
+                - B: (nc, l)
+                - C: (m, nc)
+                - D: (m, l)
+                - E: (nc, q)
+                - F: (m, q)
+            where nc is a controller state dimension, m is a plant input dimension, l
+            is a plant output dimension, and q is a reference dimension.
+
+            If the matrices are 1D arrays, they are reshaped to 2D arrays with a single
+            row or column as necessary. If the state is a 2D array with a single column,
+            it is reshaped to a 1D array.
+
+            If the matrices E and F are not provided, they are set to zero matrices of
+            the appropriate dimensions.
+
+            If the initial state is not provided, it is set to a zero vector of the same
+            dimension as the state matrix A.
+        """
+
         A_ = np.asarray(A, dtype=np.float64)
 
         match A_.ndim:
@@ -694,6 +1160,27 @@ class Controller:
         output: Optional[ArrayLike] = None,
         reference: Optional[ArrayLike] = None,
     ) -> None:
+        """
+        Resets the state, input, output, and reference of the controller.
+
+        Args:
+            state (ArrayLike, optional, default = None): New state.
+            input (ArrayLike, optional, default = None): New input.
+            output (ArrayLike, optional, default = None): New output.
+            reference (ArrayLike, optional, default = None): New reference.
+
+        Raises:
+            ValueError: If the dimensions of the new state, input, output, or reference
+                are invalid.
+
+        Returns:
+            None
+
+        Note:
+            If the new state, input, output, or reference is not provided, it is set to
+            a zero vector of the appropriate dimension.
+        """
+
         if state is None:
             self.state = np.zeros(self.A.shape[0], dtype=np.float64)
 
@@ -773,6 +1260,22 @@ class Controller:
     def get_output(
         self, measurement: ArrayLike, reference: Optional[ArrayLike] = None
     ) -> ArrayLike:
+        """
+        Updates the state of the controller and computes a control input to a plant
+        based on a measurement and a reference.
+
+        Args:
+            measurement (ArrayLike): Measurement output of the plant.
+            reference (ArrayLike, optional, default = None): Reference input to the
+                controller.
+
+        Returns:
+            ArrayLike: Control input to the plant.
+
+        Raises:
+            ValueError: If the dimensions of the measurement or reference are invalid.
+        """
+
         y = np.asarray(measurement, dtype=np.float64)
 
         match y.ndim:
@@ -823,6 +1326,40 @@ class Controller:
 
 
 class EncryptedController:
+    """
+    Represents an encrypted controller in a control system.
+
+    Attributes:
+        scheme (str): Encryption scheme used by the controller.
+        params (elgamal.PublicParameters
+            or dyn_elgamal.PublicParameters
+            or paillier.PublicParameters
+            or regev.PublicParameters
+            or gsw.PublicParameters
+            or gsw_lwe.PublicParameters): Cryptosystem parameters of the encryption
+            scheme.
+        A (NDArray[np.object_]): Encrypted state matrix.
+        B (NDArray[np.object_]): Encrypted input matrix.
+        C (NDArray[np.object_]): Encrypted output matrix.
+        D (NDArray[np.object_]): Encrypted feedforward matrix.
+        E (NDArray[np.object_]): Encrypted reference input matrix.
+        F (NDArray[np.object_]): Encrypted reference feedforward matrix.
+        state (NDArray[np.object_]): Encrypted current state.
+        input (NDArray[np.object_]): Encrypted current input.
+        output (NDArray[np.object_]): Encrypted current output.
+        reference (NDArray[np.object_]): Encrypted current reference.
+
+    Methods:
+
+    Note:
+        If the encryption scheme is "paillier" or "regev", the matrices A, B, C, D, E,
+        and F are stored as plaintexts. Otherwise, they are stored as ciphertexts.
+
+        If the encryption scheme is "gsw_lwe", the matrices A, B, C, D, E, and F are
+        stored as GSW ciphertexts, and state, input, output, and reference are stored as
+        Regev (LWE) ciphertexts.
+    """
+
     def __init__(
         self,
         scheme: str,
@@ -845,6 +1382,40 @@ class EncryptedController:
         controller: Controller,
         delta: float,
     ):
+        """
+        Initialize a new EncryptedController object.
+
+        Args:
+            scheme (str): Encryption scheme used by the controller.
+            params (elgamal.PublicParameters
+                or dyn_elgamal.PublicParameters
+                or paillier.PublicParameters
+                or regev.PublicParameters
+                or gsw.PublicParameters
+                or gsw_lwe.PublicParameters): Cryptosystem parameters of the encryption
+                scheme.
+            pk (elgamal.PublicKey
+                or dyn_elgamal.PublicKey
+                or paillier.PublicKey
+                or regev.PublicKey
+                or gsw.PublicKey
+                or gsw_lwe.PublicKey): Public key of the encryption scheme.
+            controller (Controller): Controller to be encrypted.
+            delta (float): Scaling factor.
+
+        Raises:
+            TypeError: If the encryption scheme, cryptosystem parameters, public key, or
+                scaling factor is invalid.
+
+        Note:
+            The encryption scheme must be one of the following:
+                - "elgamal"
+                - "dyn_elgamal"
+                - "paillier"
+                - "regev"
+                - "gsw"
+                - "gsw_lwe"
+        """
 
         self.scheme = scheme
         self.params = params
@@ -983,6 +1554,42 @@ class EncryptedController:
         reference: Optional[NDArray[np.object_]] = None,
         controller_state: Optional[NDArray[np.object_]] = None,
     ) -> tuple[NDArray[np.object_], NDArray[np.object_]]:
+        """
+        Computes an encrypted state update and an encrypted control input to a plant
+        based on an encrypted measurement and an encrypted reference.
+
+        Args:
+            measurement (NDArray[np.object_]): Encrypted measurement output of the
+                plant.
+            reference (NDArray[np.object_], optional, default = None): Encrypted
+                reference input to the controller.
+            controller_state (NDArray[np.object_], optional, default = None): Encrypted
+                current controller state.
+
+        Returns:
+            tuple[NDArray[np.object_], NDArray[np.object_]: Encrypted state update and
+                encrypted control input to the plant.
+
+        Raises:
+            ValueError: If the dimensions of the measurement, reference, or controller
+                state are invalid.
+            TypeError: If the encryption scheme is unsupported.
+
+        Note:
+            If the reference is not provided, the controller is assumed to be of the
+            form
+                xc(t + 1) = A xc(t) + B y(t)
+                     u(t) = C xc(t) + D y(t)
+            Otherwise, the controller is assumed to be of the form
+                xc(t + 1) = A xc(t) + B y(t) + E r(t)
+                     u(t) = C xc(t) + D y(t) + F r(t)
+            where xc is the controller state, y is the plant output, u is the plant
+            input, and r is the reference.
+
+            If the encryption scheme is "elgamal" or "dyn_elgamal", only the
+            element-wise product of the controller parameters and inputs is computed.
+        """
+
         if self.input.shape == measurement.shape:
             self.input = measurement
 
@@ -1060,7 +1667,7 @@ class EncryptedController:
                 )
 
             case _:
-                TypeError
+                raise TypeError("Unsupported encryption scheme.")
 
         controller_state_update = controller_outputs[: self.A.shape[0]]
         self.output = controller_outputs[self.A.shape[0] :]
