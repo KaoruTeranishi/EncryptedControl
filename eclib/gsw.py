@@ -1,45 +1,33 @@
 #! /usr/bin/env python3
 
-"""
-gsw.py
+"""GSW encryption scheme.
 
 This module implements the GSW encryption scheme, which is a fully homomorphic
 encryption scheme based on the Learning with Errors (LWE) problem. It provides
-functionalities for generating public parameters, public and secret keys, encryption,
-decryption, and homomorphic operations (addition, multiplication, and integer
-multiplication). It also includes functions for encoding and decoding floating-point
-data into and from plaintexts.
+functionalities for generating public and secret keys, encryption, decryption, and
+homomorphic operations (addition, multiplication, and integer multiplication). It also
+includes functions for encoding and decoding floating-point data into and from
+plaintexts.
 
+Classes
+-------
+- PublicParameters
 
-Classes:
-    PublicParameters: Represents public parameters of the GSW encryption scheme.
-
-Functions:
-    keygen: Generates public parameters, a public key, and a secret key.
-    encrypt: Encrypts a scalar, vector, or matrix plaintext.
-    decrypt: Decrypts a scalar, vector, or matrix ciphertext.
-    add: Computes a ciphertext of the addition of two scalar, vector, or matrix
-        plaintexts.
-    elementwise_add: Computes a ciphertext of the elementwise addition of two scalar,
-        vector, or matrix plaintexts.
-    mult: Computes a ciphertext of the product of two scalar, vector, or matrix
-        plaintexts.
-    elementwise_mult: Computes a ciphertext of the elementwise product of two scalar,
-        vector, or matrix plaintexts.
-    int_mult: Computes a ciphertext of the product of a scalar, vector, or matrix
-        plaintext and another scalar, vector, or matrix plaintext.
-    elementwise_int_mult: Computes a ciphertext of the elementwise product of a scalar,
-        vector, or matrix plaintext and another scalar, vector, or matrix plaintext.
-    encode: Encodes a scalar, vector, or matrix floating-point data into a plaintext.
-    decode: Decodes a scalar, vector, or matrix plaintext into floating-point data.
-    enc: Encodes and encrypts a scalar, vector, or matrix floating-point data.
-    dec: Decrypts and decodes a scalar, vector, or matrix ciphertext.
-
-Dependencies:
-    numpy: Fundamental package for scientific computing with Python.
-    numpy.typing: Type hints for NumPy.
-    eclib.randutils: Utility functions for generating random numbers.
-    eclib.regev: Regev (LWE) encryption scheme.
+Functions
+---------
+- keygen
+- encrypt
+- decrypt
+- add
+- elementwise_add
+- mult
+- elementwise_mult
+- int_mult
+- elementwise_int_mult
+- encode
+- decode
+- enc
+- dec
 """
 
 from dataclasses import dataclass
@@ -59,15 +47,21 @@ class PublicParameters:
     """
     Represents public parameters of the GSW encryption scheme.
 
-    Attributes:
-        n (int): Dimension of a the lattice, which is equal to the dimension of secret
-            key.
-        q (int): Modulus of plaintext and ciphertext spaces.
-        sigma (float): Standard deviation of the discrete Gaussian distribution with
-            mean zero used as an error distribution.
-        m (int): Subdimension of lattice.
-        l (int): Bit length of the modulus.
-        N (int): N = (n + 1) * l.
+    Attributes
+    ----------
+    n : int
+        Dimension of a lattice, which is equal to the dimension of secret key.
+    q : int
+        Modulus of plaintext and ciphertext spaces.
+    sigma : float
+        Standard deviation of the discrete Gaussian distribution with mean zero used as
+        an error distribution.
+    m : int
+        Subdimension of the lattice.
+    l : int
+        Bit length of the modulus.
+    N : int
+        `N = (n + 1) * l`.
     """
 
     n: int
@@ -81,15 +75,24 @@ class PublicParameters:
         """
         Initializes a new PublicParameters object.
 
-        Args:
-            n (int): Dimension of a lattice, which is equal to the dimension of secret
-                key.
-            q (int): Modulus of plaintext and ciphertext spaces.
-            sigma (float): Standard deviation of the discrete Gaussian distribution
-                with mean zero used as an error distribution.
-            m (int, optional, default = None): Subdimension of the lattice.
+        Parameters
+        ----------
+        n : int
+            Dimension of a lattice, which is equal to the dimension of secret key.
+        q : int
+            Modulus of plaintext and ciphertext spaces.
+        sigma : float
+            Standard deviation of the discrete Gaussian distribution with mean zero used
+            as an error distribution.
+        m : int, optional
+            Subdimension of the lattice.
 
-        Note:
+        Returns
+        -------
+        None
+
+        Note
+        ----
             If `m` is not provided, it is set to `2 * n * ceil(log2(q))`.
         """
 
@@ -110,24 +113,36 @@ def keygen(n: int, q: int, sigma: float, m: Optional[int] = None):
     """
     Generates public parameters, a public key, and a secret key.
 
-    Args:
-        n (int): Dimension of a lattice, which is equal to the dimension of secret key.
-        q (int): Modulus of plaintext and ciphertext spaces.
-        sigma (float): Standard deviation of the discrete Gaussian distribution with
-            mean zero used as an error distribution.
-        m (int, optional, default = None): Subdimension of the lattice.
+    Parameters
+    ----------
+    n : int
+        Dimension of a lattice, which is equal to the dimension of secret key.
+    q : int
+        Modulus of plaintext and ciphertext spaces.
+    sigma : float
+        Standard deviation of the discrete Gaussian distribution with mean zero used as
+        an error distribution.
+    m : int, optional
+        Subdimension of the lattice.
 
-    Returns:
-        tuple[PublicParameters, PublicKey, SecretKey]: Tuple containing the public
-            parameters and Regev (LWE) public and secret keys.
+    Returns
+    -------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    pk : eclib.regev.PublicKey
+        Public key used for encryption.
+    sk : eclib.regev.SecretKey
+        Secret key used for decryption.
 
-    Note:
-        If `m` is not provided, it is set to `2 * n * ceil(log2(q))`.
+    Note
+    ----
+    If `m` is not provided, it is set to `2 * n * ceil(log2(q))`.
 
-    See Also:
-        PublicParameters
-        :class:`~regev.PublicKey`
-        :class:`~regev.SecretKey`
+    See Also
+    --------
+    eclib.gsw.PublicParameters
+    eclib.regev.PublicKey
+    eclib.regev.SecretKey
     """
 
     params = PublicParameters(n, q, sigma, m)
@@ -146,20 +161,29 @@ def encrypt(
     """
     Encrypts a scalar, vector, or matrix plaintext `m` using a public key `pk`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        pk (PublicKey): Public key used for encryption.
-        m (ArrayLike): Plaintext to be encrypted.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    pk : eclib.regev.PublicKey
+        Public key used for encryption.
+    m : array_like
+        Plaintext to be encrypted.
 
-    Returns:
-        NDArray[np.object_]: Ciphertext of the plaintext.
+    Returns
+    -------
+    numpy.ndarray
+        Ciphertext of the plaintext.
 
-    Raises:
-        ValueError: If the plaintext is not a scalar, vector, or matrix.
+    Raises
+    ------
+    ValueError
+        If the plaintext is not a scalar, vector, or matrix.
 
-    See Also:
-        decrypt
-        enc
+    See Also
+    --------
+    eclib.gsw.decrypt
+    eclib.gsw.enc
     """
 
     m = np.asarray(m, dtype=object)
@@ -193,20 +217,29 @@ def decrypt(
     """
     Decrypts a scalar, vector, or matrix ciphertext `c` using a secret key `sk`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        sk (SecretKey): Secret key used for decryption.
-        c (NDArray[np.object_]): Ciphertext to be decrypted.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    sk : eclib.regev.SecretKey
+        Secret key used for decryption.
+    c : numpy.ndarray
+        Ciphertext to be decrypted.
 
-    Returns:
-        ArrayLike: Decrypted plaintext.
+    Returns
+    -------
+    array_like
+        Decrypted plaintext.
 
-    Raises:
-        ValueError: If the ciphertext is not a scalar, vector, or matrix.
+    Raises
+    ------
+    ValueError
+        If the ciphertext is not a scalar, vector, or matrix.
 
-    See Also:
-        encrypt
-        dec
+    See Also
+    --------
+    eclib.gsw.encrypt
+    eclib.gsw.dec
     """
 
     c = np.asarray(c, dtype=object)
@@ -243,20 +276,29 @@ def add(
     Computes a ciphertext of the addition of two scalar, vector, or matrix plaintexts
     corresponding to ciphertexts `c1` and `c2`.
 
-    Args:
-        params (PublicParameters): The public parameters of the Paillier cryptosystem.
-        c1 (NDArray[np.object_]): Ciphertext of the first plaintext.
-        c2 (NDArray[np.object_]): Ciphertext of the second plaintext.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    c1 : numpy.ndarray
+        Ciphertext of the first plaintext.
+    c2 : numpy.ndarray
+        Ciphertext of the second plaintext.
 
-    Returns:
-        NDArray[np.object_]: Ciphertext of the addition of the plaintexts.
+    Returns
+    -------
+    numpy.ndarray
+        Ciphertext of the addition of the plaintexts.
 
-    Raises:
-        ValueError: If the ciphertexts are not the following types of appropriate
-            sizes: scalar-scalar, vector-vector, or matrix-matrix.
+    Raises
+    ------
+    ValueError
+        If the ciphertexts are not the following types of appropriate sizes:
+        scalar-scalar, vector-vector, or matrix-matrix.
 
-    See Also:
-        elementwise_add
+    See Also
+    --------
+    eclib.gsw.elementwise_add
     """
 
     c1 = np.asarray(c1, dtype=object)
@@ -298,20 +340,29 @@ def elementwise_add(
     Computes a ciphertext of the elementwise addition of two scalar, vector, or matrix
     plaintexts corresponding to ciphertexts `c1` and `c2`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        c1 (NDArray[np.object_]): Ciphertext of the first plaintext.
-        c2 (NDArray[np.object_]): Ciphertext of the second plaintext.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    c1 : numpy.ndarray
+        Ciphertext of the first plaintext.
+    c2 : numpy.ndarray
+        Ciphertext of the second plaintext.
 
-    Returns:
-        NDArray[np.object_]: Ciphertext of the elementwise addition of the plaintexts.
+    Returns
+    -------
+    numpy.ndarray
+        Ciphertext of the elementwise addition of the plaintexts.
 
-    Raises:
-        ValueError: If the ciphertexts are not the following types of appropriate
-            sizes: scalar-scalar, vector-vector, matrix-vector, or matrix-matrix.
+    Raises
+    ------
+    ValueError
+        If the ciphertexts are not the following types of appropriate sizes:
+        scalar-scalar, vector-vector, matrix-vector, or matrix-matrix.
 
-    See Also:
-        add
+    See Also
+    --------
+    eclib.gsw.add
     """
 
     c1 = np.asarray(c1, dtype=object)
@@ -340,21 +391,30 @@ def mult(
     Computes a ciphertext of the product of two scalar, vector, or matrix plaintexts
     corresponding to ciphertexts `c1` and `c2`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        c1 (NDArray[np.object_]): Ciphertext of the first plaintext.
-        c2 (NDArray[np.object_]): Ciphertext of the second plaintext.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    c1 : numpy.ndarray
+        Ciphertext of the first plaintext.
+    c2 : numpy.ndarray
+        Ciphertext of the second plaintext.
 
-    Returns:
-        NDArray[np.object_]: Ciphertext of the product of the plaintexts.
+    Returns
+    -------
+    numpy.ndarray
+        Ciphertext of the product of the plaintexts.
 
-    Raises:
-        ValueError: If the ciphertexts are not the following types of appropriate
-        sizes: scalar-scalar, scalar-vector, scalar-matrix, vector-vector,
-        matrix-vector, or matrix-matrix.
+    Raises
+    ------
+    ValueError
+        If the ciphertexts are not the following types of appropriate sizes:
+        scalar-scalar, scalar-vector, scalar-matrix, vector-vector, matrix-vector, or
+        matrix-matrix.
 
-    See Also:
-        elementwise_mult
+    See Also
+    --------
+    eclib.gsw.elementwise_mult
     """
 
     c1 = np.asarray(c1, dtype=object)
@@ -421,21 +481,30 @@ def elementwise_mult(
     Computes a ciphertext of the elementwise product of two scalar, vector, or matrix
     plaintexts corresponding to ciphertexts `c1` and `c2`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        c1 (NDArray[np.object_]): Ciphertext of the first plaintext.
-        c2 (NDArray[np.object_]): Ciphertext of the second plaintext.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    c1 : numpy.ndarray
+        Ciphertext of the first plaintext.
+    c2 : numpy.ndarray
+        Ciphertext of the second plaintext.
 
-    Returns:
-        NDArray[np.object_]: Ciphertext of the elementwise product of the plaintexts.
+    Returns
+    -------
+    numpy.ndarray
+        Ciphertext of the elementwise product of the plaintexts.
 
-    Raises:
-        ValueError: If the ciphertexts are not the following types of appropriate
-        sizes: scalar-scalar, scalar-vector, scalar-matrix, vector-vector,
-        matrix-vector, or matrix-matrix.
+    Raises
+    ------
+    ValueError
+        If the ciphertexts are not the following types of appropriate sizes:
+        scalar-scalar, scalar-vector, scalar-matrix, vector-vector, matrix-vector, or
+        matrix-matrix.
 
-    See Also:
-        mult
+    See Also
+    --------
+    eclib.gsw.mult
     """
 
     c1 = np.asarray(c1, dtype=object)
@@ -480,21 +549,30 @@ def int_mult(
     Computes a ciphertext of the product of a scalar, vector, or matrix plaintext `m`
     and another scalar, vector, or matrix plaintext corresponding to a ciphertext `c`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        m (ArrayLike): Plaintext to be multiplied.
-        c (NDArray[np.object_]): Ciphertext of a plaintext to be multiplied.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    m : array_like
+        Plaintext to be multiplied.
+    c : numpy.ndarray
+        Ciphertext of a plaintext to be multiplied.
 
-    Returns:
-        NDArray[np.object_]: Ciphertext of the product of the plaintexts.
+    Returns
+    -------
+    numpy.ndarray
+        Ciphertext of the product of the plaintexts.
 
-    Raises:
-        ValueError: If the plaintext and ciphertext are not the following types of
-            appropriate sizes: scalar-scalar, scalar-vector, scalar-matrix,
-            vector-vector, matrix-vector, or matrix-matrix.
+    Raises
+    ------
+    ValueError
+        If the plaintext and ciphertext are not the following types of appropriate
+        sizes: scalar-scalar, scalar-vector, scalar-matrix, vector-vector,
+        matrix-vector, or matrix-matrix.
 
-    See Also:
-        elementwise_int_mult
+    See Also
+    --------
+    eclib.gsw.elementwise_int_mult
     """
 
     m = np.asarray(m, dtype=object)
@@ -562,21 +640,30 @@ def elementwise_int_mult(
     plaintext `m` and another scalar, vector, or matrix plaintext corresponding to a
     ciphertext `c`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        m (ArrayLike): Plaintext to be multiplied.
-        c (NDArray[np.object_]): Ciphertext of a plaintext to be multiplied.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    m : array_like
+        Plaintext to be multiplied.
+    c : numpy.ndarray
+        Ciphertext of a plaintext to be multiplied.
 
-    Returns:
-        NDArray[np.object_]: Ciphertext of the elementwise product of the plaintexts.
+    Returns
+    -------
+    numpy.ndarray
+        Ciphertext of the elementwise product of the plaintexts.
 
-    Raises:
-        ValueError: If the plaintext and ciphertext are not the following types of
-            appropriate sizes: scalar-scalar, scalar-vector, scalar-matrix,
-            vector-vector, matrix-vector, or matrix-matrix.
+    Raises
+    ------
+    ValueError
+        If the plaintext and ciphertext are not the following types of appropriate
+        sizes: scalar-scalar, scalar-vector, scalar-matrix, vector-vector,
+        matrix-vector, or matrix-matrix.
 
-    See Also:
-        int_mult
+    See Also
+    --------
+    eclib.gsw.int_mult
     """
 
     m = np.asarray(m, dtype=object)
@@ -618,17 +705,24 @@ def encode(params: PublicParameters, x: ArrayLike, delta: float) -> ArrayLike:
     """
     Encodes a scalar, vector, or matrix floating-point data `x` into a plaintext.
 
-    Parameters:
-        params (PublicParameters): Cryptosystem parameters.
-        x (ArrayLike): Floating-point data to be encoded.
-        delta (float): Scaling factor.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    x : array_like
+        Floating-point data to be encoded.
+    delta : float
+        Scaling factor.
 
-    Returns:
-        ArrayLike: Encoded plaintext.
+    Returns
+    -------
+    array_like
+        Encoded plaintext.
 
-    See Also:
-        decode
-        enc
+    See Also
+    --------
+    eclib.gsw.decode
+    eclib.gsw.enc
     """
 
     f = np.frompyfunc(_encode, 3, 1)
@@ -639,17 +733,24 @@ def decode(params: PublicParameters, m: ArrayLike, delta: float) -> ArrayLike:
     """
     Decodes a scalar, vector, or matrix plaintext `m` into a floating-point data.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        m (ArrayLike): Plaintext to be decoded.
-        delta (float): Scaling factor.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    m : array_like
+        Plaintext to be decoded.
+    delta : float
+        Scaling factor.
 
-    Returns:
-        ArrayLike: Decoded floating-point data.
+    Returns
+    -------
+    array_like
+        Decoded floating-point data.
 
-    See Also:
-        encode
-        dec
+    See Also
+    --------
+    eclib.gsw.encode
+    eclib.gsw.dec
     """
 
     f = np.frompyfunc(_decode, 3, 1)
@@ -663,19 +764,26 @@ def enc(
     Encodes and encrypts a scalar, vector, or matrix floating-point data `x` using a
     public key `pk`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        pk (PublicKey): Public key used for encryption.
-        x (ArrayLike): Floating-point data to be encoded and encrypted.
-        delta (float): Scaling factor.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    pk : eclib.regev.PublicKey
+        Public key used for encryption.
+    x : array_like
+        Floating-point data to be encoded and encrypted.
+    delta : float
+        Scaling factor.
 
-    Returns:
-        NDArray[np.object_]: Ciphertext of the encoded plaintext of the floating-point
-            data.
+    Returns
+    -------
+    numpy.ndarray
+        Ciphertext of the encoded plaintext of the floating-point data.
 
-    See Also:
-        encrypt
-        encode
+    See Also
+    --------
+    eclib.gsw.encrypt
+    eclib.gsw.encode
     """
 
     return encrypt(params, pk, encode(params, x, delta))
@@ -688,18 +796,26 @@ def dec(
     Decrypts and decodes a scalar, vector, or matrix ciphertext `c` using a secret key
     `sk`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        sk (SecretKey): Secret key used for decryption.
-        c (NDArray[np.object_]): Ciphertext to be decrypted and decoded.
-        delta (float): Scaling factor.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    sk : eclib.regev.SecretKey
+        Secret key used for decryption.
+    c : numpy.ndarray
+        Ciphertext to be decrypted and decoded.
+    delta : float
+        Scaling factor.
 
-    Returns:
-        ArrayLike: Decoded floating-point data of the decrypted plaintext.
+    Returns
+    -------
+    array_like
+        Decoded floating-point data of the decrypted plaintext.
 
-    See Also:
-        decrypt
-        decode
+    See Also
+    --------
+    eclib.gsw.decrypt
+    eclib.gsw.decode
     """
 
     return decode(params, decrypt(params, sk, c), delta)
@@ -709,13 +825,19 @@ def _encrypt(params: PublicParameters, pk: PublicKey, m: int) -> NDArray[np.obje
     """
     Encrypts a message `m` using a public key `pk`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        pk (PublicKey): Public key used for encryption.
-        m (int): Plaintext to be encrypted.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    pk : eclib.regev.PublicKey
+        Public key used for encryption.
+    m : int
+        Plaintext to be encrypted.
 
-    Returns:
-        NDArray[np.object_]: Ciphertext of the plaintext.
+    Returns
+    -------
+    numpy.ndarray
+        Ciphertext of the plaintext.
     """
 
     R = np.array(
@@ -731,13 +853,19 @@ def _decrypt(params: PublicParameters, sk: SecretKey, c: NDArray[np.object_]) ->
     """
     Decrypts a ciphertext `c` using a secret key `sk`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        sk (SecretKey): Secret key used for decryption.
-        c (NDArray[np.object_]): Ciphertext to be decrypted.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    sk : eclib.regev.SecretKey
+        Secret key used for decryption.
+    c : numpy.ndarray
+        Ciphertext to be decrypted.
 
-    Returns:
-        int: Decrypted plaintext.
+    Returns
+    -------
+    int
+        Decrypted plaintext.
     """
 
     tmp = (np.block([1, -sk.s.T]) @ c[:, 0 : params.l]).reshape(-1) % params.q
@@ -765,13 +893,19 @@ def _add(
     Computes a ciphertext of the addition of two plaintexts corresponding to
     ciphertexts `c1` and `c2`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        c1 (NDArray[np.object_]): Ciphertext of the first plaintext.
-        c2 (NDArray[np.object_]): Ciphertext of the second plaintext.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    c1 : numpy.ndarray
+        Ciphertext of the first plaintext.
+    c2 : numpy.ndarray
+        Ciphertext of the second plaintext.
 
-    Returns:
-        NDArray[np.object_]: Ciphertext of the addition of the plaintexts.
+    Returns
+    -------
+    numpy.ndarray
+        Ciphertext of the addition of the plaintexts.
     """
 
     return (c1 + c2) % params.q
@@ -784,13 +918,19 @@ def _mult(
     Computes a ciphertext of the product of two plaintexts corresponding to ciphertexts
     `c1` and `c2`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        c1 (NDArray[np.object_]): Ciphertext of the first plaintext.
-        c2 (NDArray[np.object_]): Ciphertext of the second plaintext.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    c1 : numpy.ndarray
+        Ciphertext of the first plaintext.
+    c2 : numpy.ndarray
+        Ciphertext of the second plaintext.
 
-    Returns:
-        NDArray[np.object_]: Ciphertext of the product of the plaintexts.
+    Returns
+    -------
+    numpy.ndarray
+        Ciphertext of the product of the plaintexts.
     """
 
     bit_decomposed = np.block(
@@ -806,13 +946,19 @@ def _int_mult(
     Computes a ciphertext of the product of a plaintext `m` and another plaintext
     corresponding to a ciphertext `c`.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        m (int): Plaintext to be multiplied.
-        c (NDArray[np.object_]): Ciphertext of a plaintext to be multiplied.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    m : int
+        Plaintext to be multiplied.
+    c : numpy.ndarray
+        Ciphertext of a plaintext to be multiplied.
 
-    Returns:
-        NDArray[np.object_]: Ciphertext of the product of the plaintexts.
+    Returns
+    -------
+    numpy.ndarray
+        Ciphertext of the product of the plaintexts.
     """
 
     return (m * c) % params.q
@@ -822,16 +968,24 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
     """
     Encodes a floating-point number `x` into a plaintext.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        x (float): Floating-point number to be encoded.
-        delta (float): Scaling factor.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    x : float
+        Floating-point number to be encoded.
+    delta : float
+        Scaling factor.
 
-    Returns:
-        int: Encoded plaintext.
+    Returns
+    -------
+    int
+        Encoded plaintext.
 
-    Raises:
-        ValueError: If the encoded value is out of range (underflow or overflow).
+    Raises
+    ------
+    ValueError
+        If the encoded value is out of range (underflow or overflow).
     """
 
     m = floor(x / delta + 0.5)
@@ -850,13 +1004,19 @@ def _decode(params: PublicParameters, m: int, delta: float) -> float:
     """
     Decodes a plaintext `m` into a floating-point number.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        m (int): Plaintext to be decoded.
-        delta (float): Scaling factor.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    m : int
+        Plaintext to be decoded.
+    delta : float
+        Scaling factor.
 
-    Returns:
-        float: Decoded floating-point number.
+    Returns
+    -------
+    float
+        Decoded floating-point number.
     """
 
     return (m - floor(m / params.q + 0.5) * params.q) * delta
@@ -866,12 +1026,15 @@ def _gadget(params: PublicParameters) -> NDArray[np.object_]:
     """
     Constructs the gadget matrix for the GSW encryption scheme.
 
-    Parameters:
-        params (PublicParameters): Cryptosystem parameters.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
 
-    Returns:
-        NDArray[np.object_]: The gadget matrix.
-
+    Returns
+    -------
+    numpy.ndarray
+        The gadget matrix.
     """
 
     g = 2 ** np.arange(params.l, dtype=object)
@@ -882,15 +1045,22 @@ def _bitdecomp(params: PublicParameters, v: ArrayLike) -> NDArray[np.object_]:
     """
     Decomposes the input array `v` into its binary representation.
 
-    Args:
-        params (PublicParameters): Cryptosystem parameters.
-        v (ArrayLike): Input array to be decomposed.
+    Parameters
+    ----------
+    params : eclib.gsw.PublicParameters
+        Cryptosystem parameters.
+    v : array_like
+        Input array to be decomposed.
 
-    Returns:
-        NDArray[np.object_]: Binary decomposition of the input array.
+    Returns
+    -------
+    numpy.ndarray
+        Binary decomposition of the input array.
 
-    Raises:
-        ValueError: If the input array is not one-dimensional.
+    Raises
+    ------
+    ValueError
+        If the input array is not one-dimensional.
     """
 
     v = np.asarray(v, dtype=object)

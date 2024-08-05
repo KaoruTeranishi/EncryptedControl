@@ -3,7 +3,7 @@
 """Figure settings and universal colors.
 
 This module provides a dataclass for universal colors in RGB format and a function for
-setting up the default figure settings for matplotlib.
+default figure settings for matplotlib.
 
 Classes
 -------
