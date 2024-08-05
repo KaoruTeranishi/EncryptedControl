@@ -31,19 +31,19 @@ class Plant:
 
     Attributes
     ----------
-    A : NDArray
+    A : numpy.ndarray
         State matrix.
-    B : NDArray
+    B : numpy.ndarray
         Input matrix.
-    C : NDArray
+    C : numpy.ndarray
         Output matrix.
-    D : NDArray
+    D : numpy.ndarray
         Feedforward matrix.
-    state : NDArray
+    state : numpy.ndarray
         Current state.
-    input : NDArray
+    input : numpy.ndarray
         Current input.
-    output : NDArray
+    output : numpy.ndarray
         Current output.
 
     Note
@@ -818,25 +818,25 @@ class Controller:
 
     Attributes
     ----------
-    A : NDArray
+    A : numpy.ndarray
         State matrix.
-    B : NDArray
+    B : numpy.ndarray
         Input matrix.
-    C : NDArray
+    C : numpy.ndarray
         Output matrix.
-    D : NDArray
+    D : numpy.ndarray
         Feedforward matrix.
-    E : NDArray
+    E : numpy.ndarray
         Reference input matrix.
-    F : NDArray
+    F : numpy.ndarray
         Reference feedforward matrix.
-    state : NDArray
+    state : numpy.ndarray
         Current state.
-    input : NDArray
+    input : numpy.ndarray
         Current input.
-    output : NDArray
+    output : numpy.ndarray
         Current output.
-    reference : NDArray
+    reference : numpy.ndarray
         Current reference.
 
     Note
