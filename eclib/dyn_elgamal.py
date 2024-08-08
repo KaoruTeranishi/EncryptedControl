@@ -94,50 +94,50 @@ def mult(
     return elgamal.mult(params, c1, c2)
 
 
-def encode(params: PublicParameters, x: ArrayLike, delta: float) -> ArrayLike:
+def encode(params: PublicParameters, x: ArrayLike, scale: float) -> ArrayLike:
     """
     This function is the same as :func:`eclib.elgamal.encode`.
     """
 
-    return elgamal.encode(params, x, delta)
+    return elgamal.encode(params, x, scale)
 
 
-def decode(params: PublicParameters, m: ArrayLike, delta: float) -> ArrayLike:
+def decode(params: PublicParameters, m: ArrayLike, scale: float) -> ArrayLike:
     """
     This function is the same as :func:`eclib.elgamal.decode`.
     """
 
-    return elgamal.decode(params, m, delta)
+    return elgamal.decode(params, m, scale)
 
 
 def enc(
-    params: PublicParameters, pk: PublicKey, x: ArrayLike, delta: float
+    params: PublicParameters, pk: PublicKey, x: ArrayLike, scale: float
 ) -> NDArray[np.object_]:
     """
     This function is the same as :func:`eclib.elgamal.enc`.
     """
 
-    return elgamal.enc(params, pk, x, delta)
+    return elgamal.enc(params, pk, x, scale)
 
 
 def dec(
-    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], scale: float
 ) -> ArrayLike:
     """
     This function is the same as :func:`eclib.elgamal.dec`.
     """
 
-    return elgamal.dec(params, sk, c, delta)
+    return elgamal.dec(params, sk, c, scale)
 
 
 def dec_add(
-    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], scale: float
 ) -> ArrayLike:
     """
     This function is the same as :func:`eclib.elgamal.dec_add`.
     """
 
-    return elgamal.dec_add(params, sk, c, delta)
+    return elgamal.dec_add(params, sk, c, scale)
 
 
 def update_key(

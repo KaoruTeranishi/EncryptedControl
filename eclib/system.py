@@ -311,7 +311,7 @@ class Sensor:
         Cryptosystem parameters of the encryption scheme.
     pk : public key or None
         Public key of the encryption scheme.
-    delta : float or None
+    scale : float or None
         Scaling factor.
     """
 
@@ -334,7 +334,7 @@ class Sensor:
             | gsw.PublicKey
             | gsw_lwe.PublicKey
         ] = None,
-        delta: Optional[float] = None,
+        scale: Optional[float] = None,
     ):
         """
         Initialize a new Sensor object.
@@ -347,7 +347,7 @@ class Sensor:
             Cryptosystem parameters of the encryption scheme.
         pk : public key or None, optional
             Public key of the encryption scheme.
-        delta : float, optional
+        scale : float, optional
             Scaling factor.
 
         Returns
@@ -369,7 +369,7 @@ class Sensor:
         self.scheme = scheme
         self.params = params
         self.pk = pk
-        self.delta = delta
+        self.scale = scale
 
     def get_output(self, plant: Plant) -> ArrayLike:
         """
@@ -417,7 +417,7 @@ class Sensor:
 
         plant.output = plant.C @ plant.state + plant.D @ plant.input
 
-        if not isinstance(self.delta, float):
+        if not isinstance(self.scale, float):
             raise TypeError
 
         match self.scheme:
@@ -425,37 +425,37 @@ class Sensor:
                 isinstance(self.params, elgamal.PublicParameters)
                 and isinstance(self.pk, elgamal.PublicKey)
             ):
-                return elgamal.enc(self.params, self.pk, plant.output, self.delta)
+                return elgamal.enc(self.params, self.pk, plant.output, self.scale)
 
             case "dyn_elgamal" if (
                 isinstance(self.params, dyn_elgamal.PublicParameters)
                 and isinstance(self.pk, dyn_elgamal.PublicKey)
             ):
-                return dyn_elgamal.enc(self.params, self.pk, plant.output, self.delta)
+                return dyn_elgamal.enc(self.params, self.pk, plant.output, self.scale)
 
             case "paillier" if (
                 isinstance(self.params, paillier.PublicParameters)
                 and isinstance(self.pk, paillier.PublicKey)
             ):
-                return paillier.enc(self.params, self.pk, plant.output, self.delta)
+                return paillier.enc(self.params, self.pk, plant.output, self.scale)
 
             case "regev" if (
                 isinstance(self.params, regev.PublicParameters)
                 and isinstance(self.pk, regev.PublicKey)
             ):
-                return regev.enc(self.params, self.pk, plant.output, self.delta)
+                return regev.enc(self.params, self.pk, plant.output, self.scale)
 
             case "gsw" if (
                 isinstance(self.params, gsw.PublicParameters)
                 and isinstance(self.pk, gsw.PublicKey)
             ):
-                return gsw.enc(self.params, self.pk, plant.output, self.delta)
+                return gsw.enc(self.params, self.pk, plant.output, self.scale)
 
             case "gsw_lwe" if (
                 isinstance(self.params, gsw_lwe.PublicParameters)
                 and isinstance(self.pk, gsw_lwe.PublicKey)
             ):
-                return gsw_lwe.enc(self.params, self.pk, plant.output, self.delta)
+                return gsw_lwe.enc(self.params, self.pk, plant.output, self.scale)
 
             case _:
                 raise TypeError
@@ -475,9 +475,9 @@ class Actuator:
         Public key of the encryption scheme.
     sk : secret key or None
         Secret key of the encryption scheme.
-    delta_enc : float or None
+    scale_enc : float or None
         Scaling factor for encoding and encryption.
-    delta_dec : float or None
+    scale_dec : float or None
         Scaling factor for decoding and decryption.
     """
 
@@ -508,8 +508,8 @@ class Actuator:
             | gsw.SecretKey
             | gsw_lwe.SecretKey
         ] = None,
-        delta_enc: Optional[float] = None,
-        delta_dec: Optional[float] = None,
+        scale_enc: Optional[float] = None,
+        scale_dec: Optional[float] = None,
     ):
         """
         Initialize a new Actuator object.
@@ -524,9 +524,9 @@ class Actuator:
             Public key of the encryption scheme.
         sk : secret key or None, optional
             Secret key of the encryption scheme.
-        delta_enc : float, optional
+        scale_enc : float, optional
             Scaling factor for encoding and encryption.
-        delta_dec : float, optional
+        scale_dec : float, optional
             Scaling factor for decoding and decryption.
 
         Returns
@@ -549,8 +549,8 @@ class Actuator:
         self.params = params
         self.pk = pk
         self.sk = sk
-        self.delta_enc = delta_enc
-        self.delta_dec = delta_dec
+        self.scale_enc = scale_enc
+        self.scale_dec = scale_dec
 
     def set_input(self, plant: Plant, input: ArrayLike) -> None:
         """
@@ -608,7 +608,7 @@ class Actuator:
             factor is invalid.
         """
 
-        if not isinstance(self.delta_dec, float):
+        if not isinstance(self.scale_dec, float):
             raise TypeError
 
         match self.scheme:
@@ -622,7 +622,7 @@ class Actuator:
                         self.params,
                         self.sk,
                         np.asarray(input, dtype=object),
-                        self.delta_dec,
+                        self.scale_dec,
                     ),
                 )
 
@@ -636,7 +636,7 @@ class Actuator:
                         self.params,
                         self.sk,
                         np.asarray(input, dtype=object),
-                        self.delta_dec,
+                        self.scale_dec,
                     ),
                 )
 
@@ -645,7 +645,7 @@ class Actuator:
                 and isinstance(self.sk, paillier.SecretKey)
             ):
                 self.set_input(
-                    plant, paillier.dec(self.params, self.sk, input, self.delta_dec)
+                    plant, paillier.dec(self.params, self.sk, input, self.scale_dec)
                 )
 
             case "regev" if (
@@ -658,7 +658,7 @@ class Actuator:
                         self.params,
                         self.sk,
                         np.asarray(input, dtype=object),
-                        self.delta_dec,
+                        self.scale_dec,
                     ),
                 )
 
@@ -672,7 +672,7 @@ class Actuator:
                         self.params,
                         self.sk,
                         np.asarray(input, dtype=object),
-                        self.delta_dec,
+                        self.scale_dec,
                     ),
                 )
 
@@ -686,7 +686,7 @@ class Actuator:
                         self.params,
                         self.sk,
                         np.asarray(input, dtype=object),
-                        self.delta_dec,
+                        self.scale_dec,
                     ),
                 )
 
@@ -721,8 +721,8 @@ class Actuator:
         controller state.
         """
 
-        if not isinstance(self.delta_enc, float) or not isinstance(
-            self.delta_dec, float
+        if not isinstance(self.scale_enc, float) or not isinstance(
+            self.scale_dec, float
         ):
             raise TypeError
 
@@ -736,9 +736,9 @@ class Actuator:
                     self.params,
                     self.pk,
                     elgamal.dec_add(
-                        self.params, self.sk, controller_state, self.delta_dec
+                        self.params, self.sk, controller_state, self.scale_dec
                     ),
-                    self.delta_enc,
+                    self.scale_enc,
                 )
 
             case "dyn_elgamal" if (
@@ -750,9 +750,9 @@ class Actuator:
                     self.params,
                     self.pk,
                     dyn_elgamal.dec_add(
-                        self.params, self.sk, controller_state, self.delta_dec
+                        self.params, self.sk, controller_state, self.scale_dec
                     ),
-                    self.delta_enc,
+                    self.scale_enc,
                 )
 
             case "paillier" if (
@@ -765,9 +765,9 @@ class Actuator:
                         self.params,
                         self.pk,
                         paillier.dec(
-                            self.params, self.sk, controller_state, self.delta_dec
+                            self.params, self.sk, controller_state, self.scale_dec
                         ),
-                        self.delta_enc,
+                        self.scale_enc,
                     ),
                     dtype=object,
                 )
@@ -780,8 +780,8 @@ class Actuator:
                 return regev.enc(
                     self.params,
                     self.pk,
-                    regev.dec(self.params, self.sk, controller_state, self.delta_dec),
-                    self.delta_enc,
+                    regev.dec(self.params, self.sk, controller_state, self.scale_dec),
+                    self.scale_enc,
                 )
 
             case "gsw" if (
@@ -792,8 +792,8 @@ class Actuator:
                 return gsw.enc(
                     self.params,
                     self.pk,
-                    gsw.dec(self.params, self.sk, controller_state, self.delta_dec),
-                    self.delta_enc,
+                    gsw.dec(self.params, self.sk, controller_state, self.scale_dec),
+                    self.scale_enc,
                 )
 
             case "gsw_lwe" if (
@@ -804,8 +804,8 @@ class Actuator:
                 return gsw_lwe.enc(
                     self.params,
                     self.pk,
-                    gsw_lwe.dec(self.params, self.sk, controller_state, self.delta_dec),
-                    self.delta_enc,
+                    gsw_lwe.dec(self.params, self.sk, controller_state, self.scale_dec),
+                    self.scale_enc,
                 )
 
             case _:
@@ -1227,7 +1227,7 @@ class Operator:
         Cryptosystem parameters of the encryption scheme.
     pk : public key or None
         Public key of the encryption scheme.
-    delta : float or None
+    scale : float or None
         Scaling factor.
     """
 
@@ -1250,7 +1250,7 @@ class Operator:
             | gsw.PublicKey
             | gsw_lwe.PublicKey
         ] = None,
-        delta: Optional[float] = None,
+        scale: Optional[float] = None,
     ):
         """
         Initialize a new Operator object.
@@ -1263,7 +1263,7 @@ class Operator:
             Cryptosystem parameters of the encryption scheme.
         pk : public key or None, optional
             Public key of the encryption scheme.
-        delta : float, optional
+        scale : float, optional
             Scaling factor.
 
         Returns
@@ -1285,7 +1285,7 @@ class Operator:
         self.scheme = scheme
         self.params = params
         self.pk = pk
-        self.delta = delta
+        self.scale = scale
 
     def get_enc_reference(self, reference: ArrayLike) -> int | NDArray[np.object_]:
         """
@@ -1308,7 +1308,7 @@ class Operator:
             factor is invalid.
         """
 
-        if not isinstance(self.delta, float):
+        if not isinstance(self.scale, float):
             raise TypeError
 
         match self.scheme:
@@ -1316,37 +1316,37 @@ class Operator:
                 isinstance(self.params, elgamal.PublicParameters)
                 and isinstance(self.pk, elgamal.PublicKey)
             ):
-                return elgamal.enc(self.params, self.pk, reference, self.delta)
+                return elgamal.enc(self.params, self.pk, reference, self.scale)
 
             case "dyn_elgamal" if (
                 isinstance(self.params, dyn_elgamal.PublicParameters)
                 and isinstance(self.pk, dyn_elgamal.PublicKey)
             ):
-                return dyn_elgamal.enc(self.params, self.pk, reference, self.delta)
+                return dyn_elgamal.enc(self.params, self.pk, reference, self.scale)
 
             case "paillier" if (
                 isinstance(self.params, paillier.PublicParameters)
                 and isinstance(self.pk, paillier.PublicKey)
             ):
-                return paillier.enc(self.params, self.pk, reference, self.delta)
+                return paillier.enc(self.params, self.pk, reference, self.scale)
 
             case "regev" if (
                 isinstance(self.params, regev.PublicParameters)
                 and isinstance(self.pk, regev.PublicKey)
             ):
-                return regev.enc(self.params, self.pk, reference, self.delta)
+                return regev.enc(self.params, self.pk, reference, self.scale)
 
             case "gsw" if (
                 isinstance(self.params, gsw.PublicParameters)
                 and isinstance(self.pk, gsw.PublicKey)
             ):
-                return gsw.enc(self.params, self.pk, reference, self.delta)
+                return gsw.enc(self.params, self.pk, reference, self.scale)
 
             case "gsw_lwe" if (
                 isinstance(self.params, gsw_lwe.PublicParameters)
                 and isinstance(self.pk, gsw_lwe.PublicKey)
             ):
-                return gsw_lwe.enc(self.params, self.pk, reference, self.delta)
+                return gsw_lwe.enc(self.params, self.pk, reference, self.scale)
 
             case _:
                 raise TypeError
@@ -1404,7 +1404,7 @@ class EncryptedController:
             | gsw_lwe.PublicKey
         ),
         controller: Controller,
-        delta: float,
+        scale: float,
     ):
         """
         Initialize a new EncryptedController object.
@@ -1419,7 +1419,7 @@ class EncryptedController:
             Public key of the encryption scheme.
         controller : Controller
             Controller to be encrypted.
-        delta : float
+        scale : float
             Scaling factor.
 
         Raises
@@ -1456,32 +1456,32 @@ class EncryptedController:
                 isinstance(params, elgamal.PublicParameters)
                 and isinstance(pk, elgamal.PublicKey)
             ):
-                self.A = elgamal.enc(params, pk, controller.A, delta)
-                self.B = elgamal.enc(params, pk, controller.B, delta)
-                self.C = elgamal.enc(params, pk, controller.C, delta)
-                self.D = elgamal.enc(params, pk, controller.D, delta)
-                self.E = elgamal.enc(params, pk, controller.E, delta)
-                self.F = elgamal.enc(params, pk, controller.F, delta)
-                self.state = elgamal.enc(params, pk, controller.state, delta)
-                self.input = elgamal.enc(params, pk, controller.input, delta)
-                self.output = elgamal.enc(params, pk, controller.output, delta)
-                self.reference = elgamal.enc(params, pk, controller.reference, delta)
+                self.A = elgamal.enc(params, pk, controller.A, scale)
+                self.B = elgamal.enc(params, pk, controller.B, scale)
+                self.C = elgamal.enc(params, pk, controller.C, scale)
+                self.D = elgamal.enc(params, pk, controller.D, scale)
+                self.E = elgamal.enc(params, pk, controller.E, scale)
+                self.F = elgamal.enc(params, pk, controller.F, scale)
+                self.state = elgamal.enc(params, pk, controller.state, scale)
+                self.input = elgamal.enc(params, pk, controller.input, scale)
+                self.output = elgamal.enc(params, pk, controller.output, scale)
+                self.reference = elgamal.enc(params, pk, controller.reference, scale)
 
             case "dyn_elgamal" if (
                 isinstance(params, dyn_elgamal.PublicParameters)
                 and isinstance(pk, dyn_elgamal.PublicKey)
             ):
-                self.A = dyn_elgamal.enc(params, pk, controller.A, delta)
-                self.B = dyn_elgamal.enc(params, pk, controller.B, delta)
-                self.C = dyn_elgamal.enc(params, pk, controller.C, delta)
-                self.D = dyn_elgamal.enc(params, pk, controller.D, delta)
-                self.E = dyn_elgamal.enc(params, pk, controller.E, delta)
-                self.F = dyn_elgamal.enc(params, pk, controller.F, delta)
-                self.state = dyn_elgamal.enc(params, pk, controller.state, delta)
-                self.input = dyn_elgamal.enc(params, pk, controller.input, delta)
-                self.output = dyn_elgamal.enc(params, pk, controller.output, delta)
+                self.A = dyn_elgamal.enc(params, pk, controller.A, scale)
+                self.B = dyn_elgamal.enc(params, pk, controller.B, scale)
+                self.C = dyn_elgamal.enc(params, pk, controller.C, scale)
+                self.D = dyn_elgamal.enc(params, pk, controller.D, scale)
+                self.E = dyn_elgamal.enc(params, pk, controller.E, scale)
+                self.F = dyn_elgamal.enc(params, pk, controller.F, scale)
+                self.state = dyn_elgamal.enc(params, pk, controller.state, scale)
+                self.input = dyn_elgamal.enc(params, pk, controller.input, scale)
+                self.output = dyn_elgamal.enc(params, pk, controller.output, scale)
                 self.reference = dyn_elgamal.enc(
-                    params, pk, controller.reference, delta
+                    params, pk, controller.reference, scale
                 )
 
             case "paillier" if (
@@ -1489,34 +1489,34 @@ class EncryptedController:
                 and isinstance(pk, paillier.PublicKey)
             ):
                 self.A = np.asarray(
-                    paillier.encode(params, controller.A, delta), dtype=object
+                    paillier.encode(params, controller.A, scale), dtype=object
                 )
                 self.B = np.asarray(
-                    paillier.encode(params, controller.B, delta), dtype=object
+                    paillier.encode(params, controller.B, scale), dtype=object
                 )
                 self.C = np.asarray(
-                    paillier.encode(params, controller.C, delta), dtype=object
+                    paillier.encode(params, controller.C, scale), dtype=object
                 )
                 self.D = np.asarray(
-                    paillier.encode(params, controller.D, delta), dtype=object
+                    paillier.encode(params, controller.D, scale), dtype=object
                 )
                 self.E = np.asarray(
-                    paillier.encode(params, controller.E, delta), dtype=object
+                    paillier.encode(params, controller.E, scale), dtype=object
                 )
                 self.F = np.asarray(
-                    paillier.encode(params, controller.F, delta), dtype=object
+                    paillier.encode(params, controller.F, scale), dtype=object
                 )
                 self.state = np.asarray(
-                    paillier.enc(params, pk, controller.state, delta), dtype=object
+                    paillier.enc(params, pk, controller.state, scale), dtype=object
                 )
                 self.input = np.asarray(
-                    paillier.enc(params, pk, controller.input, delta), dtype=object
+                    paillier.enc(params, pk, controller.input, scale), dtype=object
                 )
                 self.output = np.asarray(
-                    paillier.enc(params, pk, controller.output, delta), dtype=object
+                    paillier.enc(params, pk, controller.output, scale), dtype=object
                 )
                 self.reference = np.asarray(
-                    paillier.enc(params, pk, controller.reference, delta), dtype=object
+                    paillier.enc(params, pk, controller.reference, scale), dtype=object
                 )
 
             case "regev" if (
@@ -1524,57 +1524,57 @@ class EncryptedController:
                 and isinstance(pk, regev.PublicKey)
             ):
                 self.A = np.asarray(
-                    regev.encode(params, controller.A, delta), dtype=object
+                    regev.encode(params, controller.A, scale), dtype=object
                 )
                 self.B = np.asarray(
-                    regev.encode(params, controller.B, delta), dtype=object
+                    regev.encode(params, controller.B, scale), dtype=object
                 )
                 self.C = np.asarray(
-                    regev.encode(params, controller.C, delta), dtype=object
+                    regev.encode(params, controller.C, scale), dtype=object
                 )
                 self.D = np.asarray(
-                    regev.encode(params, controller.D, delta), dtype=object
+                    regev.encode(params, controller.D, scale), dtype=object
                 )
                 self.E = np.asarray(
-                    regev.encode(params, controller.E, delta), dtype=object
+                    regev.encode(params, controller.E, scale), dtype=object
                 )
                 self.F = np.asarray(
-                    regev.encode(params, controller.F, delta), dtype=object
+                    regev.encode(params, controller.F, scale), dtype=object
                 )
-                self.state = regev.enc(params, pk, controller.state, delta)
-                self.input = regev.enc(params, pk, controller.input, delta)
-                self.output = regev.enc(params, pk, controller.output, delta)
-                self.reference = regev.enc(params, pk, controller.reference, delta)
+                self.state = regev.enc(params, pk, controller.state, scale)
+                self.input = regev.enc(params, pk, controller.input, scale)
+                self.output = regev.enc(params, pk, controller.output, scale)
+                self.reference = regev.enc(params, pk, controller.reference, scale)
 
             case "gsw" if (
                 isinstance(params, gsw.PublicParameters)
                 and isinstance(pk, gsw.PublicKey)
             ):
-                self.A = gsw.enc(params, pk, controller.A, delta)
-                self.B = gsw.enc(params, pk, controller.B, delta)
-                self.C = gsw.enc(params, pk, controller.C, delta)
-                self.D = gsw.enc(params, pk, controller.D, delta)
-                self.E = gsw.enc(params, pk, controller.E, delta)
-                self.F = gsw.enc(params, pk, controller.F, delta)
-                self.state = gsw.enc(params, pk, controller.state, delta)
-                self.input = gsw.enc(params, pk, controller.input, delta)
-                self.output = gsw.enc(params, pk, controller.output, delta)
-                self.reference = gsw.enc(params, pk, controller.reference, delta)
+                self.A = gsw.enc(params, pk, controller.A, scale)
+                self.B = gsw.enc(params, pk, controller.B, scale)
+                self.C = gsw.enc(params, pk, controller.C, scale)
+                self.D = gsw.enc(params, pk, controller.D, scale)
+                self.E = gsw.enc(params, pk, controller.E, scale)
+                self.F = gsw.enc(params, pk, controller.F, scale)
+                self.state = gsw.enc(params, pk, controller.state, scale)
+                self.input = gsw.enc(params, pk, controller.input, scale)
+                self.output = gsw.enc(params, pk, controller.output, scale)
+                self.reference = gsw.enc(params, pk, controller.reference, scale)
 
             case "gsw_lwe" if (
                 isinstance(params, gsw_lwe.PublicParameters)
                 and isinstance(pk, gsw_lwe.PublicKey)
             ):
-                self.A = gsw_lwe.enc_gsw(params, pk, controller.A, delta)
-                self.B = gsw_lwe.enc_gsw(params, pk, controller.B, delta)
-                self.C = gsw_lwe.enc_gsw(params, pk, controller.C, delta)
-                self.D = gsw_lwe.enc_gsw(params, pk, controller.D, delta)
-                self.E = gsw_lwe.enc_gsw(params, pk, controller.E, delta)
-                self.F = gsw_lwe.enc_gsw(params, pk, controller.F, delta)
-                self.state = gsw_lwe.enc(params, pk, controller.state, delta)
-                self.input = gsw_lwe.enc(params, pk, controller.input, delta)
-                self.output = gsw_lwe.enc(params, pk, controller.output, delta)
-                self.reference = gsw_lwe.enc(params, pk, controller.reference, delta)
+                self.A = gsw_lwe.enc_gsw(params, pk, controller.A, scale)
+                self.B = gsw_lwe.enc_gsw(params, pk, controller.B, scale)
+                self.C = gsw_lwe.enc_gsw(params, pk, controller.C, scale)
+                self.D = gsw_lwe.enc_gsw(params, pk, controller.D, scale)
+                self.E = gsw_lwe.enc_gsw(params, pk, controller.E, scale)
+                self.F = gsw_lwe.enc_gsw(params, pk, controller.F, scale)
+                self.state = gsw_lwe.enc(params, pk, controller.state, scale)
+                self.input = gsw_lwe.enc(params, pk, controller.input, scale)
+                self.output = gsw_lwe.enc(params, pk, controller.output, scale)
+                self.reference = gsw_lwe.enc(params, pk, controller.reference, scale)
 
             case _:
                 raise TypeError

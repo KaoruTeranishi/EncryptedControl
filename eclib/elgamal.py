@@ -407,7 +407,7 @@ def mult(
             raise ValueError
 
 
-def encode(params: PublicParameters, x: ArrayLike, delta: float) -> ArrayLike:
+def encode(params: PublicParameters, x: ArrayLike, scale: float) -> ArrayLike:
     """
     Encodes a scalar, vector, or matrix floating-point data `x` into a plaintext.
 
@@ -417,7 +417,7 @@ def encode(params: PublicParameters, x: ArrayLike, delta: float) -> ArrayLike:
         Cryptosystem parameters.
     x : array_like
         Floating-point data to be encoded.
-    delta : float
+    scale : float
         Scaling factor.
 
     Returns
@@ -432,10 +432,10 @@ def encode(params: PublicParameters, x: ArrayLike, delta: float) -> ArrayLike:
     """
 
     f = np.frompyfunc(_encode, 3, 1)
-    return f(params, x, delta)
+    return f(params, x, scale)
 
 
-def decode(params: PublicParameters, m: ArrayLike, delta: float) -> ArrayLike:
+def decode(params: PublicParameters, m: ArrayLike, scale: float) -> ArrayLike:
     """
     Decodes a scalar, vector, or matrix plaintext `m` into a floating-point data.
 
@@ -445,7 +445,7 @@ def decode(params: PublicParameters, m: ArrayLike, delta: float) -> ArrayLike:
         Cryptosystem parameters.
     m : array_like
         Plaintext to be decoded.
-    delta : float
+    scale : float
         Scaling factor.
 
     Returns
@@ -460,11 +460,11 @@ def decode(params: PublicParameters, m: ArrayLike, delta: float) -> ArrayLike:
     """
 
     f = np.frompyfunc(_decode, 3, 1)
-    return f(params, m, delta)
+    return f(params, m, scale)
 
 
 def enc(
-    params: PublicParameters, pk: PublicKey, x: ArrayLike, delta: float
+    params: PublicParameters, pk: PublicKey, x: ArrayLike, scale: float
 ) -> NDArray[np.object_]:
     """
     Encodes and encrypts a scalar, vector, or matrix floating-point data `x` using a
@@ -478,7 +478,7 @@ def enc(
         Public key used for encryption.
     x : array_like
         Floating-point data to be encoded and encrypted.
-    delta : float
+    scale : float
         Scaling factor.
 
     Returns
@@ -492,11 +492,11 @@ def enc(
     eclib.elgamal.encode
     """
 
-    return encrypt(params, pk, encode(params, x, delta))
+    return encrypt(params, pk, encode(params, x, scale))
 
 
 def dec(
-    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], scale: float
 ) -> ArrayLike:
     """
     Decrypts and decodes a scalar, vector, or matrix ciphertext `c` using a secret key
@@ -510,7 +510,7 @@ def dec(
         Secret key used for decryption.
     c : numpy.ndarray
         Ciphertext to be decrypted and decoded.
-    delta : float
+    scale : float
         Scaling factor.
 
     Returns
@@ -524,11 +524,11 @@ def dec(
     eclib.elgamal.decode
     """
 
-    return decode(params, decrypt(params, sk, c), delta)
+    return decode(params, decrypt(params, sk, c), scale)
 
 
 def dec_add(
-    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], scale: float
 ) -> ArrayLike:
     """
     Decrypts and computes the sum of row-wise elements of a scalar, vector, or matrix
@@ -542,7 +542,7 @@ def dec_add(
         Secret key used for decryption.
     c : numpy.ndarray
         Ciphertext to be decrypted and summed.
-    delta : float
+    scale : float
         Scaling factor.
 
     Returns
@@ -565,13 +565,13 @@ def dec_add(
 
     match c.ndim - 1:
         case 0:
-            return dec(params, sk, c, delta)
+            return dec(params, sk, c, scale)
 
         case 1:
-            return np.sum(dec(params, sk, c, delta), axis=0)
+            return np.sum(dec(params, sk, c, scale), axis=0)
 
         case 2:
-            return np.sum(dec(params, sk, c, delta), axis=1)
+            return np.sum(dec(params, sk, c, scale), axis=1)
 
         case _:
             raise ValueError
@@ -653,7 +653,7 @@ def _mult(
     )
 
 
-def _encode(params: PublicParameters, x: float, delta: float) -> int:
+def _encode(params: PublicParameters, x: float, scale: float) -> int:
     """
     Encodes a floating-point number `x` into a plaintext.
 
@@ -663,7 +663,7 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
         Cryptosystem parameters.
     x : float
         Floating-point number to be encoded.
-    delta : float
+    scale : float
         Scaling factor.
 
     Returns
@@ -677,8 +677,8 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
         If the encoded value is out of range (underflow or overflow).
     """
 
-    m = floor(x / delta + 0.5)
-    first_decimal_place = (x / delta * 10) % 10
+    m = floor(x / scale + 0.5)
+    first_decimal_place = (x / scale * 10) % 10
 
     if m < 0:
         if m < -params.q:
@@ -690,7 +690,7 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
     elif m > params.q:
         raise ValueError("Overflow")
 
-    if x / delta == int(x / delta) or first_decimal_place >= 5:
+    if x / scale == int(x / scale) or first_decimal_place >= 5:
         for i in range(params.q):
             if m - i > 0 and _is_element(m - i, params.q, params.p):
                 return m - i
@@ -709,7 +709,7 @@ def _encode(params: PublicParameters, x: float, delta: float) -> int:
     raise ValueError
 
 
-def _decode(params: PublicParameters, m: int, delta: float) -> float:
+def _decode(params: PublicParameters, m: int, scale: float) -> float:
     """
     Decodes a plaintext `m` into a floating-point number.
 
@@ -719,7 +719,7 @@ def _decode(params: PublicParameters, m: int, delta: float) -> float:
         Cryptosystem parameters.
     m : int
         Plaintext to be decoded.
-    delta : float
+    scale : float
         Scaling factor.
 
     Returns
@@ -729,10 +729,10 @@ def _decode(params: PublicParameters, m: int, delta: float) -> float:
     """
 
     if m > params.q:
-        return (m - params.p) * delta
+        return (m - params.p) * scale
 
     else:
-        return m * delta
+        return m * scale
 
 
 def _is_generator(g: int, q: int, p: int) -> bool:

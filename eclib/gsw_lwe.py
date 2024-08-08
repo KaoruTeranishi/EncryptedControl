@@ -316,57 +316,57 @@ def elementwise_int_mult(
     return regev.elementwise_int_mult(params.lwe_params, m, c)
 
 
-def encode(params: PublicParameters, x: ArrayLike, delta: float) -> ArrayLike:
+def encode(params: PublicParameters, x: ArrayLike, scale: float) -> ArrayLike:
     """
     This function is the same as :func:`eclib.regev.encode`.
     """
 
-    return regev.encode(params.lwe_params, x, delta)
+    return regev.encode(params.lwe_params, x, scale)
 
 
-def decode(params: PublicParameters, m: ArrayLike, delta: float) -> ArrayLike:
+def decode(params: PublicParameters, m: ArrayLike, scale: float) -> ArrayLike:
     """
     This function is the same as :func:`eclib.regev.decode`.
     """
 
-    return regev.decode(params.lwe_params, m, delta)
+    return regev.decode(params.lwe_params, m, scale)
 
 
 def enc(
-    params: PublicParameters, pk: PublicKey, x: ArrayLike, delta: float
+    params: PublicParameters, pk: PublicKey, x: ArrayLike, scale: float
 ) -> NDArray[np.object_]:
     """
     This function is the same as :func:`eclib.regev.enc`.
     """
 
-    return regev.enc(params.lwe_params, pk, x, delta)
+    return regev.enc(params.lwe_params, pk, x, scale)
 
 
 def enc_gsw(
-    params: PublicParameters, pk: PublicKey, x: ArrayLike, delta: float
+    params: PublicParameters, pk: PublicKey, x: ArrayLike, scale: float
 ) -> NDArray[np.object_]:
     """
     This function is the same as :func:`eclib.gsw.enc`.
     """
 
-    return gsw.enc(params.gsw_params, pk, x, delta)
+    return gsw.enc(params.gsw_params, pk, x, scale)
 
 
 def dec(
-    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], scale: float
 ) -> ArrayLike:
     """
     This function is the same as :func:`eclib.regev.dec`.
     """
 
-    return regev.dec(params.lwe_params, sk, c, delta)
+    return regev.dec(params.lwe_params, sk, c, scale)
 
 
 def dec_gsw(
-    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], delta: float
+    params: PublicParameters, sk: SecretKey, c: NDArray[np.object_], scale: float
 ) -> ArrayLike:
     """
     This function is the same as :func:`eclib.gsw.dec`.
     """
 
-    return gsw.dec(params.gsw_params, sk, c, delta)
+    return gsw.dec(params.gsw_params, sk, c, scale)
