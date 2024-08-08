@@ -162,7 +162,7 @@ def update_key(
         Updated public key.
     sk_updated : eclib.elgamal.SecretKey
         Updated secret key.
-    t : Token
+    t : eclib.dyn_elgamal.Token
         Token used for updating ciphertexts.
 
     See Also
