@@ -4,7 +4,7 @@
 # ECLib
 
 ECLib is an easy-to-use open-source homomorphic encryption library for encrypted control.
-For more details, see [documentation](https://kaoruteranishi.github.io/EncryptedControl/index.html)
+For more details, see [documentation](https://kaoruteranishi.github.io/EncryptedControl/index.html).
 
 
 ## Supported encryption schemes
