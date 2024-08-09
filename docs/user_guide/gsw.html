@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GSW encryption &mdash; ECLib 2.0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=c2377ec0"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="GSW-LWE encryption" href="gsw_lwe.html" />
+    <link rel="prev" title="Regev (LWE) encryption" href="regev.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ECLib
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="user_guide.html">User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#getting-started">Getting started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#fundamentals-and-usage">Fundamentals and usage</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="user_guide.html#algorithms">Algorithms</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="elgamal.html">ElGamal encryption</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dyn_elgamal.html">Dynamic-key ElGamal encryption</a></li>
+<li class="toctree-l3"><a class="reference internal" href="paillier.html">Paillier encryption</a></li>
+<li class="toctree-l3"><a class="reference internal" href="regev.html">Regev (LWE) encryption</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">GSW encryption</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#key-generation">Key generation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#encryption">Encryption</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#decryption">Decryption</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#addition">Addition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#integer-multiplication">Integer multiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#multiplication">Multiplication</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="gsw_lwe.html">GSW-LWE encryption</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/api_reference.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ECLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="user_guide.html">User Guide</a></li>
+      <li class="breadcrumb-item active">GSW encryption</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/gsw.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="gsw-encryption">
+<h1>GSW encryption<a class="headerlink" href="#gsw-encryption" title="Link to this heading"></a></h1>
+<p>The <a class="reference external" href="https://doi.org/10.1007/978-3-642-40041-4_5">GSW encryption</a> is a public-key encryption scheme based on the Learning With Errors (LWE) problem.
+ECLib implements the following algorithms.</p>
+<section id="key-generation">
+<h2>Key generation<a class="headerlink" href="#key-generation" title="Link to this heading"></a></h2>
+<p>The key generation algorithm takes <span class="math notranslate nohighlight">\((m, n, q, \sigma)\)</span> as input and outputs public parameters <span class="math notranslate nohighlight">\((m, n, q, \sigma, \ell, N)\)</span>, public key <span class="math notranslate nohighlight">\(B\)</span>, and secret key <span class="math notranslate nohighlight">\(s\)</span>, where <span class="math notranslate nohighlight">\(m\)</span>, <span class="math notranslate nohighlight">\(n\)</span>, and <span class="math notranslate nohighlight">\(q\)</span> are positive integers, <span class="math notranslate nohighlight">\(\sigma\)</span> is a positive real number, <span class="math notranslate nohighlight">\(\ell = \lceil \log_2 q \rceil\)</span>, <span class="math notranslate nohighlight">\(N = (n + 1) \ell\)</span>, <span class="math notranslate nohighlight">\(s \in \mathbb{Z}_q^n\)</span> is a random vector, <span class="math notranslate nohighlight">\(B = [b^\top \ A^\top]^\top \in \mathbb{Z}^{(n + 1) \times m}\)</span>, <span class="math notranslate nohighlight">\(A \in \mathbb{Z}_q^{n \times m}\)</span> is a random matrix, <span class="math notranslate nohighlight">\(b = s^\top A + e^\top \bmod q\)</span>, and <span class="math notranslate nohighlight">\(e \in \mathbb{Z}^m\)</span> is a random vector sampled from <span class="math notranslate nohighlight">\(m\)</span>-dimensional discrete Gaussian distribution with mean zero and variance <span class="math notranslate nohighlight">\(\sigma\)</span>.
+The plaintext and ciphertext spaces are given by <span class="math notranslate nohighlight">\(\mathcal{M} = \mathbb{Z}_q\)</span> and <span class="math notranslate nohighlight">\(\mathcal{C} = \mathbb{Z}_q^{(n + 1) \times N}\)</span>, respectively.</p>
+</section>
+<section id="encryption">
+<h2>Encryption<a class="headerlink" href="#encryption" title="Link to this heading"></a></h2>
+<p>The encryption algorithm takes the public parameters, public key, and a plaintext <span class="math notranslate nohighlight">\(m \in \mathcal{M}\)</span> as input and outputs</p>
+<div class="math notranslate nohighlight">
+\[
+B R + m G \bmod q,
+\]</div>
+<p>where <span class="math notranslate nohighlight">\(R \in \mathbb{Z}_2^{m \times N}\)</span> is a random matrix, <span class="math notranslate nohighlight">\(G = I_{n + 1} \otimes g\)</span> is a gadget matrix, <span class="math notranslate nohighlight">\(I_{n + 1}\)</span> is the identify matrix of size <span class="math notranslate nohighlight">\(n + 1\)</span>, <span class="math notranslate nohighlight">\(g = [2^0 \ 2^1\ \cdots \ 2^{\ell - 1}]\)</span>, and <span class="math notranslate nohighlight">\(\otimes\)</span> denotes the Kronecker product.</p>
+</section>
+<section id="decryption">
+<h2>Decryption<a class="headerlink" href="#decryption" title="Link to this heading"></a></h2>
+<p>The decryption algorithm takes the public parameters, secret key, and a ciphertext <span class="math notranslate nohighlight">\(c \in \mathcal{C}\)</span> as input.
+Suppose that</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+c &amp;=
+\begin{bmatrix}
+    c_1 &amp; \cdots &amp; c_N
+\end{bmatrix}, \quad
+c_i \in \mathbb{Z}_q^{n + 1}, \\
+\begin{bmatrix}
+    x_0 \\
+    \vdots \\
+    x_{\ell - 1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+    1 &amp; -s^\top
+\end{bmatrix}
+\begin{bmatrix}
+    c_1 &amp; \cdots &amp; c_\ell
+\end{bmatrix}
+\bmod q.
+\end{split}\]</div>
+<p>The algorithm outputs</p>
+<div class="math notranslate nohighlight">
+\[
+    \sum_{i=0}^{\ell-1} 2^i b_i \bmod q,
+\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+b_0 &amp;= \left\lfloor \frac{ x_{\ell - 1} }{ 2^{\ell - 1} } \right\rceil \bmod 2, \\
+b_i &amp;= \left\lfloor \frac{ x_{\ell - i - 1} - \sum_{j=1}^i 2^{\ell - i + j - 2} x_{j - 1} }{ 2^{\ell - 1} } \right\rceil \bmod 2, \quad i = 1, \dots, \ell - 1.
+\end{split}\]</div>
+</section>
+<section id="addition">
+<h2>Addition<a class="headerlink" href="#addition" title="Link to this heading"></a></h2>
+<p>The addition algorithm takes the public parameters and two ciphertexts <span class="math notranslate nohighlight">\(c_1, c_2 \in \mathcal{C}\)</span> as input and outputs</p>
+<div class="math notranslate nohighlight">
+\[
+c_1 + c_2 \bmod q.
+\]</div>
+</section>
+<section id="integer-multiplication">
+<h2>Integer multiplication<a class="headerlink" href="#integer-multiplication" title="Link to this heading"></a></h2>
+<p>The integer multiplication algorithm takes the public parameters, a plaintext <span class="math notranslate nohighlight">\(m \in \mathcal{M}\)</span>, and a ciphertext <span class="math notranslate nohighlight">\(c \in \mathcal{C}\)</span> as input and outputs</p>
+<div class="math notranslate nohighlight">
+\[
+m c \bmod q.
+\]</div>
+</section>
+<section id="multiplication">
+<h2>Multiplication<a class="headerlink" href="#multiplication" title="Link to this heading"></a></h2>
+<p>The multiplication algorithm takes the public parameters and two ciphertexts <span class="math notranslate nohighlight">\(c_1, c_2 \in \mathcal{C}\)</span> as input and outputs</p>
+<div class="math notranslate nohighlight">
+\[
+c_1 
+\begin{bmatrix}
+    G^{-1}(c_{2,1}) &amp; \cdots &amp; G^{-1}(c_{2,N})
+\end{bmatrix}
+\bmod q,
+\]</div>
+<p>where <span class="math notranslate nohighlight">\(c_2 = [c_{2,1} \ \cdots \ c_{2,N}]\)</span>, and <span class="math notranslate nohighlight">\(G^{-1}: \mathbb{Z}_q^{n + 1} \to \{0, 1\}^N\)</span> is a bit decomposition function such that <span class="math notranslate nohighlight">\(G G^{-1}(v) = v\)</span> for all <span class="math notranslate nohighlight">\(v \in \mathbb{Z}_q^{n + 1}\)</span>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="regev.html" class="btn btn-neutral float-left" title="Regev (LWE) encryption" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gsw_lwe.html" class="btn btn-neutral float-right" title="GSW-LWE encryption" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kaoru Teranishi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

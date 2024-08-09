@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control system &mdash; ECLib 2.0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=c2377ec0"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Encrypted control system" href="encrypted_control_system.html" />
+    <link rel="prev" title="Encoding and decoding" href="encoding_decoding.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ECLib
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="user_guide.html">User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#getting-started">Getting started</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="user_guide.html#fundamentals-and-usage">Fundamentals and usage</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="key_generation.html">Key generation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="encryption_decryption.html">Encryption and decryption</a></li>
+<li class="toctree-l3"><a class="reference internal" href="homomorphic_operation.html">Homomorphic operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="encoding_decoding.html">Encoding and decoding</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Control system</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#plant">Plant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sensor">Sensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#actuator">Actuator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#controller">Controller</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="encrypted_control_system.html">Encrypted control system</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#algorithms">Algorithms</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/api_reference.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ECLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="user_guide.html">User Guide</a></li>
+      <li class="breadcrumb-item active">Control system</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/control_system.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="control-system">
+<h1>Control system<a class="headerlink" href="#control-system" title="Link to this heading"></a></h1>
+<p>Control systems in ECLib consists of a plant, sensor, actuator, and controller as shown in the figure below.</p>
+<p><img alt="Control system" src="../_images/control_system.png" /></p>
+<section id="plant">
+<h2>Plant<a class="headerlink" href="#plant" title="Link to this heading"></a></h2>
+<p>Plant is a discrete-time linear time-invariant system to be controlled and is given by the state-space representation</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+x(t + 1) &amp;= A x(t) + B u(t) \\
+y(t) &amp;= C x(t) + D u(t)
+\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(x \in \mathbb{R}^n\)</span> is a state, <span class="math notranslate nohighlight">\(u \in \mathbb{R}^m\)</span> is an input, <span class="math notranslate nohighlight">\(y \in \mathbb{R}^\ell\)</span> is an output, <span class="math notranslate nohighlight">\(A \in \mathbb{R}^{n \times n}\)</span> is a state matrix, <span class="math notranslate nohighlight">\(B \in \mathbb{R}^{n \times m}\)</span> is an input matrix, <span class="math notranslate nohighlight">\(C \in \mathbb{R}^{\ell \times n}\)</span> is an output matrix, and <span class="math notranslate nohighlight">\(D \in \mathbb{R}^{\ell \times m}\)</span> is a feedforward matrix.
+Plant class in ECLib represents and creates the dynamical system.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">plant</span> <span class="o">=</span> <span class="n">Plant</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The constructor takes 1D or 2D array-like variables <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, <code class="docutils literal notranslate"><span class="pre">C</span></code>, <code class="docutils literal notranslate"><span class="pre">D</span></code>, and <code class="docutils literal notranslate"><span class="pre">x0</span></code> to specify the system matrices and initial state.
+The current state, input, and output can be accessed as class members.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">plant</span><span class="o">.</span><span class="n">state</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">plant</span><span class="o">.</span><span class="n">input</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">plant</span><span class="o">.</span><span class="n">output</span>
+</pre></div>
+</div>
+<p>Plant class includes <code class="docutils literal notranslate"><span class="pre">update()</span></code> method for updating the current state based on the state equation.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">plant</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="sensor">
+<h2>Sensor<a class="headerlink" href="#sensor" title="Link to this heading"></a></h2>
+<p>Sensor class represents and creates a sensor to measure the plant output.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sensor</span> <span class="o">=</span> <span class="n">Sensor</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This class includes <code class="docutils literal notranslate"><span class="pre">get_output()</span></code> method for computing and obtaining the current output based on the output equation.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">sensor</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="n">plant</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="actuator">
+<h2>Actuator<a class="headerlink" href="#actuator" title="Link to this heading"></a></h2>
+<p>Actuator class represents and creates an actuator to set the plant input.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">actuator</span> <span class="o">=</span> <span class="n">Actuator</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This class includes <code class="docutils literal notranslate"><span class="pre">set_input()</span></code> method for setting the current input to a specified control input.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">actuator</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">plant</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The specified input <code class="docutils literal notranslate"><span class="pre">u</span></code> is computed by the controller in general.</p>
+</section>
+<section id="controller">
+<h2>Controller<a class="headerlink" href="#controller" title="Link to this heading"></a></h2>
+<p>Controller is a discrete-time linear time-invariant system given by the state-space representation</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+x_c(t + 1) &amp;= A_c x_c(t) + B_c y(t) + E_c r(t) \\
+u(t) &amp;= C_c x_c(t) + D_c y(t) + F_c r(t)
+\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(x_c \in \mathbb{R}^{n_c}\)</span> is a controller state, <span class="math notranslate nohighlight">\(A_c \in \mathbb{R}^{n_c \times n_c}\)</span> is a state matrix, <span class="math notranslate nohighlight">\(B_c \in \mathbb{R}^{n_c \times \ell}\)</span> is a input matrix, <span class="math notranslate nohighlight">\(C_c \in \mathbb{R}^{m \times n_c}\)</span> is a output matrix, <span class="math notranslate nohighlight">\(D_c \in \mathbb{R}^{m \times \ell}\)</span> is a feedforward matrix, <span class="math notranslate nohighlight">\(E_c \in \mathbb{R}^{n_c \times q}\)</span> is a reference input matrix, and <span class="math notranslate nohighlight">\(F_c \in \mathbb{R}^{m \times q}\)</span> is a reference feedforward matrix.
+Controller class represents and creates the controller as similar to Plant class.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">controller</span> <span class="o">=</span> <span class="n">Controller</span><span class="p">(</span><span class="n">Ac</span><span class="p">,</span> <span class="n">Bc</span><span class="p">,</span> <span class="n">Cc</span><span class="p">,</span> <span class="n">Dc</span><span class="p">,</span> <span class="n">Ec</span><span class="p">,</span> <span class="n">Fc</span><span class="p">,</span> <span class="n">xc0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The constructor takes 1D or 2D array-like variables to specify the controller parameters and initial state.</p>
+<p>Controller class provides <code class="docutils literal notranslate"><span class="pre">get_output()</span></code> method for updating the controller state and computing control input based on the dynamics with a sensor output and reference input.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">controller</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Consequently, a basic code for each step to simulate the control system is as follows.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="mi">1</span>                           <span class="c1"># set a reference</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">sensor</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="n">plant</span><span class="p">)</span>    <span class="c1"># measure an output</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">controller</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="c1"># compute a control input</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">actuator</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">plant</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>    <span class="c1"># set the control input</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plant</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>                  <span class="c1"># update the plant state</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="encoding_decoding.html" class="btn btn-neutral float-left" title="Encoding and decoding" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="encrypted_control_system.html" class="btn btn-neutral float-right" title="Encrypted control system" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kaoru Teranishi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

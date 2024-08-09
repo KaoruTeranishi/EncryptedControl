@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eclib.elgamal &mdash; ECLib 2.0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=c2377ec0"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ECLib
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/user_guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference/api_reference.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ECLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">eclib.elgamal</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for eclib.elgamal</h1><div class="highlight"><pre>
+<span></span><span class="ch">#! /usr/bin/env python3</span>
+
+<span class="sd">&quot;&quot;&quot;ElGamal encryption scheme.</span>
+
+<span class="sd">This module implements the ElGamal encryption scheme, which is a public-key</span>
+<span class="sd">cryptosystem based on the Decisional Diffie-Hellman (DDH) assumption. It provides</span>
+<span class="sd">functionalities for generating public and secret keys, encryption, decryption, and</span>
+<span class="sd">homomorphic operations (multiplication). It also includes functions for encoding and</span>
+<span class="sd">decoding floating-point data into and from plaintexts.</span>
+
+<span class="sd">Classes</span>
+<span class="sd">-------</span>
+<span class="sd">- PublicParameters</span>
+<span class="sd">- SecretKey</span>
+<span class="sd">- PublicKey</span>
+
+<span class="sd">Functions</span>
+<span class="sd">---------</span>
+<span class="sd">- keygen</span>
+<span class="sd">- encrypt</span>
+<span class="sd">- decrypt</span>
+<span class="sd">- mult</span>
+<span class="sd">- encode</span>
+<span class="sd">- decode</span>
+<span class="sd">- enc</span>
+<span class="sd">- dec</span>
+<span class="sd">- dec_add</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">NDArray</span>
+
+<span class="kn">import</span> <span class="nn">eclib.primeutils</span> <span class="k">as</span> <span class="nn">pu</span>
+<span class="kn">import</span> <span class="nn">eclib.randutils</span> <span class="k">as</span> <span class="nn">ru</span>
+
+
+<div class="viewcode-block" id="PublicParameters">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.PublicParameters">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">PublicParameters</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents public parameters of the ElGamal encryption scheme.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    p : int</span>
+<span class="sd">        Prime number representing the modulus of a cyclic group used as a plaintext</span>
+<span class="sd">        space.</span>
+<span class="sd">    q : int</span>
+<span class="sd">        Prime number representing the order of the cyclic group.</span>
+<span class="sd">    g : int</span>
+<span class="sd">        Generator of the cyclic group.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">p</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">q</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">g</span><span class="p">:</span> <span class="nb">int</span>
+
+<div class="viewcode-block" id="PublicParameters.__init__">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.PublicParameters.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bit_length</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes a new PublicParameters object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bit_length : int, optional</span>
+<span class="sd">            Desired bit length for the prime number `q`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        If `bit_length` is None, the public parameters will be initialized with `0`.</span>
+<span class="sd">        Otherwise, the public parameters will be initialized with a Sophie Germain</span>
+<span class="sd">        prime `q` and a safe prime `p` such that `p = 2q + 1`, and a generator `g` of</span>
+<span class="sd">        the cyclic group of order `q` modulo `p`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">bit_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">pu</span><span class="o">.</span><span class="n">get_safe_prime</span><span class="p">(</span><span class="n">bit_length</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">_get_generator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SecretKey">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.SecretKey">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SecretKey</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a secret key of the ElGamal encryption scheme.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : int</span>
+<span class="sd">        Secret key value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">s</span><span class="p">:</span> <span class="nb">int</span>
+
+<div class="viewcode-block" id="SecretKey.__init__">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.SecretKey.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PublicParameters</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes a new SecretKey object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        params : eclib.elgamal.PublicParameters, optional</span>
+<span class="sd">            Cryptosystem parameters used for computing the secret key.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        If `params` is None, the secret key will be initialized with `0`. Otherwise, it</span>
+<span class="sd">        will be initialized as a random number in `[1, q - 1]`, where `q` is a prime</span>
+<span class="sd">        number representing the order of a cyclic group used as a plaintext space.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        eclib.elgamal.PublicParameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">ru</span><span class="o">.</span><span class="n">get_rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">q</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PublicKey">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.PublicKey">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">PublicKey</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a public key of the ElGamal encryption scheme.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    h : int</span>
+<span class="sd">        Public key value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">h</span><span class="p">:</span> <span class="nb">int</span>
+
+<div class="viewcode-block" id="PublicKey.__init__">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.PublicKey.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PublicParameters</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sk</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SecretKey</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes a new PublicKey object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        params : eclib.elgamal.PublicParameters, optional</span>
+<span class="sd">            Cryptosystem parameters used for computing the public key.</span>
+<span class="sd">        sk : eclib.elgamal.SecretKey, optional</span>
+<span class="sd">            Secret key used for computing the public key.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        If `params` or `sk` is None, the public key will be initialized with `0`.</span>
+<span class="sd">        Otherwise, it will be computed as `h = g^s mod p`, where `g` is a generator of</span>
+<span class="sd">        a cyclic group used as a plaintext space, `s` is a secret key value, and `p` is</span>
+<span class="sd">        a prime number representing the modulus of the cyclic group.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        eclib.elgamal.PublicParameters</span>
+<span class="sd">        eclib.elgamal.SecretKey</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">sk</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">sk</span><span class="o">.</span><span class="n">s</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="keygen">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.keygen">[docs]</a>
+<span class="k">def</span> <span class="nf">keygen</span><span class="p">(</span><span class="n">bit_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PublicParameters</span><span class="p">,</span> <span class="n">PublicKey</span><span class="p">,</span> <span class="n">SecretKey</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates public parameters, a public key, and a secret key.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bit_length : int</span>
+<span class="sd">        Desired bit length of a prime number representing the order of a cyclic group</span>
+<span class="sd">        used as a plaintext space.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    pk : eclib.elgamal.PublicKey</span>
+<span class="sd">        Public key used for encryption.</span>
+<span class="sd">    sk : eclib.elgamal.SecretKey</span>
+<span class="sd">        Secret key used for decryption.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    eclib.elgamal.PublicParameters</span>
+<span class="sd">    eclib.elgamal.PublicKey</span>
+<span class="sd">    eclib.elgamal.SecretKey</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">params</span> <span class="o">=</span> <span class="n">PublicParameters</span><span class="p">(</span><span class="n">bit_length</span><span class="p">)</span>
+
+    <span class="n">sk</span> <span class="o">=</span> <span class="n">SecretKey</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="n">pk</span> <span class="o">=</span> <span class="n">PublicKey</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">sk</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">params</span><span class="p">,</span> <span class="n">pk</span><span class="p">,</span> <span class="n">sk</span></div>
+
+
+
+<div class="viewcode-block" id="encrypt">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.encrypt">[docs]</a>
+<span class="k">def</span> <span class="nf">encrypt</span><span class="p">(</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">pk</span><span class="p">:</span> <span class="n">PublicKey</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="n">ArrayLike</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encrypts a scalar, vector, or matrix plaintext `m` using a public key `pk`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    pk : eclib.elgamal.PublicKey</span>
+<span class="sd">        Public key used for encryption.</span>
+<span class="sd">    m : array_like</span>
+<span class="sd">        Plaintext to be encrypted.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Ciphertext of the plaintext.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the plaintext is not a scalar, vector, or matrix.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    eclib.elgamal.decrypt</span>
+<span class="sd">    eclib.elgamal.enc</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
+    <span class="k">match</span> <span class="n">m</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
+        <span class="k">case</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_encrypt</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">pk</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+
+        <span class="k">case</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">_encrypt</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">pk</span><span class="p">,</span> <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="n">_encrypt</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">pk</span><span class="p">,</span> <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span></div>
+
+
+
+<div class="viewcode-block" id="decrypt">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.decrypt">[docs]</a>
+<span class="k">def</span> <span class="nf">decrypt</span><span class="p">(</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">sk</span><span class="p">:</span> <span class="n">SecretKey</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decrypts a scalar, vector, or matrix ciphertext `c` using a secret key `sk`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    sk : eclib.elgamal.SecretKey</span>
+<span class="sd">        Secret key used for decryption.</span>
+<span class="sd">    c : numpy.ndarray</span>
+<span class="sd">        Ciphertext to be decrypted.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array_like</span>
+<span class="sd">        Decrypted plaintext.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the ciphertext is not a scalar, vector, or matrix.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    eclib.elgamal.encrypt</span>
+<span class="sd">    eclib.elgamal.dec</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
+    <span class="k">match</span> <span class="n">c</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">case</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_decrypt</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">sk</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
+        <span class="k">case</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">_decrypt</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">sk</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="n">_decrypt</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">sk</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span></div>
+
+
+
+<div class="viewcode-block" id="mult">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.mult">[docs]</a>
+<span class="k">def</span> <span class="nf">mult</span><span class="p">(</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">c1</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">],</span> <span class="n">c2</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes a ciphertext of the Hadamard product of two scalar, vector, or matrix</span>
+<span class="sd">    plaintexts corresponding to ciphertexts `c1` and `c2`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    c1 : numpy.ndarray</span>
+<span class="sd">        Ciphertext of the first plaintext.</span>
+<span class="sd">    c2 : numpy.ndarray</span>
+<span class="sd">        Ciphertext of the second plaintext.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Ciphertext of the Hadamard product of the plaintexts.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the ciphertexts are not the following types of appropriate sizes:</span>
+<span class="sd">        scalar-scalar, scalar-vector, scalar-matrix, vector-vector, matrix-vector, or</span>
+<span class="sd">        matrix-matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">c1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+    <span class="n">c2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
+    <span class="k">match</span> <span class="n">c1</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">case</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">c2</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_mult</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">)</span>
+
+        <span class="k">case</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">c2</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">_mult</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">c2</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="n">_mult</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">c1</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">c2</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">_mult</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">c1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">c2</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">c2</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">c1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">c2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="n">_mult</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">c1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="n">c2</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">c1</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">c2</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="n">_mult</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">c1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="n">c2</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span></div>
+
+
+
+<div class="viewcode-block" id="encode">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.encode">[docs]</a>
+<span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encodes a scalar, vector, or matrix floating-point data `x` into a plaintext.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    x : array_like</span>
+<span class="sd">        Floating-point data to be encoded.</span>
+<span class="sd">    scale : float</span>
+<span class="sd">        Scaling factor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array_like</span>
+<span class="sd">        Encoded plaintext.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    eclib.elgamal.decode</span>
+<span class="sd">    eclib.elgamal.enc</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frompyfunc</span><span class="p">(</span><span class="n">_encode</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="decode">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.decode">[docs]</a>
+<span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decodes a scalar, vector, or matrix plaintext `m` into a floating-point data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    m : array_like</span>
+<span class="sd">        Plaintext to be decoded.</span>
+<span class="sd">    scale : float</span>
+<span class="sd">        Scaling factor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array_like</span>
+<span class="sd">        Decoded floating-point data.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    eclib.elgamal.encode</span>
+<span class="sd">    eclib.elgamal.dec</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frompyfunc</span><span class="p">(</span><span class="n">_decode</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="enc">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.enc">[docs]</a>
+<span class="k">def</span> <span class="nf">enc</span><span class="p">(</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">pk</span><span class="p">:</span> <span class="n">PublicKey</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encodes and encrypts a scalar, vector, or matrix floating-point data `x` using a</span>
+<span class="sd">    public key `pk`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    pk : eclib.elgamal.PublicKey</span>
+<span class="sd">        Public key used for encryption.</span>
+<span class="sd">    x : array_like</span>
+<span class="sd">        Floating-point data to be encoded and encrypted.</span>
+<span class="sd">    scale : float</span>
+<span class="sd">        Scaling factor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Ciphertext of the encoded plaintext of the floating-point data.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    eclib.elgamal.encrypt</span>
+<span class="sd">    eclib.elgamal.encode</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">encrypt</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">pk</span><span class="p">,</span> <span class="n">encode</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scale</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="dec">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.dec">[docs]</a>
+<span class="k">def</span> <span class="nf">dec</span><span class="p">(</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">sk</span><span class="p">:</span> <span class="n">SecretKey</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">],</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decrypts and decodes a scalar, vector, or matrix ciphertext `c` using a secret key</span>
+<span class="sd">    `sk`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    sk : eclib.elgamal.SecretKey</span>
+<span class="sd">        Secret key used for decryption.</span>
+<span class="sd">    c : numpy.ndarray</span>
+<span class="sd">        Ciphertext to be decrypted and decoded.</span>
+<span class="sd">    scale : float</span>
+<span class="sd">        Scaling factor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array_like</span>
+<span class="sd">        Decoded floating-point data of the decrypted plaintext.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    eclib.elgamal.decrypt</span>
+<span class="sd">    eclib.elgamal.decode</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">decode</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">decrypt</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">sk</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span> <span class="n">scale</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="dec_add">
+<a class="viewcode-back" href="../../api_reference/api_reference.html#eclib.elgamal.dec_add">[docs]</a>
+<span class="k">def</span> <span class="nf">dec_add</span><span class="p">(</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">sk</span><span class="p">:</span> <span class="n">SecretKey</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">],</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decrypts and computes the sum of row-wise elements of a scalar, vector, or matrix</span>
+<span class="sd">    ciphertext `c` using a secret key `sk`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    sk : eclib.elgamal.SecretKey</span>
+<span class="sd">        Secret key used for decryption.</span>
+<span class="sd">    c : numpy.ndarray</span>
+<span class="sd">        Ciphertext to be decrypted and summed.</span>
+<span class="sd">    scale : float</span>
+<span class="sd">        Scaling factor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array_like</span>
+<span class="sd">        Decoded floating-point data of the sum of the row-wise elements of the</span>
+<span class="sd">        decrypted plaintext.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the ciphertext is not a scalar, vector, or matrix.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    eclib.elgamal.dec</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
+    <span class="k">match</span> <span class="n">c</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">case</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">dec</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">sk</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+
+        <span class="k">case</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dec</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">sk</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">scale</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">case</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dec</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">sk</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">scale</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_encrypt</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">pk</span><span class="p">:</span> <span class="n">PublicKey</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encrypts a plaintext `m` using a public key `pk`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    pk : eclib.elgamal.PublicKey</span>
+<span class="sd">        Public key used for encryption.</span>
+<span class="sd">    m : int</span>
+<span class="sd">        Plaintext to be encrypted.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Ciphertext of the plaintext.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">r</span> <span class="o">=</span> <span class="n">ru</span><span class="o">.</span><span class="n">get_rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span><span class="nb">pow</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span><span class="p">),</span> <span class="p">(</span><span class="n">m</span> <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="n">pk</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span><span class="p">))</span> <span class="o">%</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span><span class="p">],</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_decrypt</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">sk</span><span class="p">:</span> <span class="n">SecretKey</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decrypts a ciphertext `c` using a secret key `sk`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    sk : eclib.elgamal.SecretKey</span>
+<span class="sd">        Secret key used for decryption.</span>
+<span class="sd">    c : numpy.ndarray</span>
+<span class="sd">        Ciphertext to be decrypted.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        Decrypted plaintext.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="nb">pow</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">sk</span><span class="o">.</span><span class="n">s</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">%</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span>
+
+
+<span class="k">def</span> <span class="nf">_mult</span><span class="p">(</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">c1</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">],</span> <span class="n">c2</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes a ciphertext of the product of two plaintexts corresponding to ciphertexts</span>
+<span class="sd">    `c1` and `c2`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    c1 : numpy.ndarray</span>
+<span class="sd">        Ciphertext of the first plaintext.</span>
+<span class="sd">    c2 : numpy.ndarray</span>
+<span class="sd">        Ciphertext of the second plaintext.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Ciphertext of the product of the plaintexts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[(</span><span class="n">c1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">c2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">%</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="p">(</span><span class="n">c1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">c2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">%</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_encode</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encodes a floating-point number `x` into a plaintext.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    x : float</span>
+<span class="sd">        Floating-point number to be encoded.</span>
+<span class="sd">    scale : float</span>
+<span class="sd">        Scaling factor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        Encoded plaintext.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the encoded value is out of range (underflow or overflow).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">floor</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">scale</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">first_decimal_place</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">scale</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span>
+
+    <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">params</span><span class="o">.</span><span class="n">q</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Underflow&quot;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">+=</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span>
+
+    <span class="k">elif</span> <span class="n">m</span> <span class="o">&gt;</span> <span class="n">params</span><span class="o">.</span><span class="n">q</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Overflow&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">x</span> <span class="o">/</span> <span class="n">scale</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">scale</span><span class="p">)</span> <span class="ow">or</span> <span class="n">first_decimal_place</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">q</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="o">-</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">_is_element</span><span class="p">(</span><span class="n">m</span> <span class="o">-</span> <span class="n">i</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">m</span> <span class="o">-</span> <span class="n">i</span>
+
+            <span class="k">elif</span> <span class="n">m</span> <span class="o">+</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span> <span class="ow">and</span> <span class="n">_is_element</span><span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">m</span> <span class="o">+</span> <span class="n">i</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">q</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="o">+</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span> <span class="ow">and</span> <span class="n">_is_element</span><span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">m</span> <span class="o">+</span> <span class="n">i</span>
+
+            <span class="k">elif</span> <span class="n">m</span> <span class="o">-</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">_is_element</span><span class="p">(</span><span class="n">m</span> <span class="o">-</span> <span class="n">i</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">m</span> <span class="o">-</span> <span class="n">i</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span>
+
+
+<span class="k">def</span> <span class="nf">_decode</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">PublicParameters</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decodes a plaintext `m` into a floating-point number.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : eclib.elgamal.PublicParameters</span>
+<span class="sd">        Cryptosystem parameters.</span>
+<span class="sd">    m : int</span>
+<span class="sd">        Plaintext to be decoded.</span>
+<span class="sd">    scale : float</span>
+<span class="sd">        Scaling factor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        Decoded floating-point number.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">m</span> <span class="o">&gt;</span> <span class="n">params</span><span class="o">.</span><span class="n">q</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">m</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">m</span> <span class="o">*</span> <span class="n">scale</span>
+
+
+<span class="k">def</span> <span class="nf">_is_generator</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if an integer `g` is a generator of a cyclic group of order `q` modulo `p`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    g : int</span>
+<span class="sd">        Integer to be checked.</span>
+<span class="sd">    q : int</span>
+<span class="sd">        Prime number representing the order of the cyclic group.</span>
+<span class="sd">    p : int</span>
+<span class="sd">        Prime number representing the modulus of the cyclic group.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if `g` is a generator of the cyclic group, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">g</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">g</span> <span class="o">&gt;=</span> <span class="n">p</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">elif</span> <span class="nb">pow</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span> <span class="nf">_is_element</span><span class="p">(</span><span class="n">m</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if an integer `m` is an element of a cyclic group of order `q` modulo `p`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    m : int</span>
+<span class="sd">        Integer to be checked.</span>
+<span class="sd">    q : int</span>
+<span class="sd">        Prime number representing the order of the cyclic group.</span>
+<span class="sd">    p : int</span>
+<span class="sd">        Prime number representing the modulus of the cyclic group.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if `m` is an element of the cyclic group, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">m</span> <span class="o">&gt;=</span> <span class="n">p</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">elif</span> <span class="nb">pow</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span> <span class="nf">_get_generator</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a generator for a cyclic group of order `q` modulo `p`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    p : int</span>
+<span class="sd">        Prime number representing the order of the cyclic group.</span>
+<span class="sd">    q : int</span>
+<span class="sd">        Prime number representing the modulus of the cyclic group.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: Generator for the cyclib group.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">g</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">while</span> <span class="n">_is_generator</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">g</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">g</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kaoru Teranishi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
