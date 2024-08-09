@@ -1,34 +1,30 @@
+import numpy as np
+
 from eclib import dyn_elgamal
 
-key_length = 64
-delta = 0.01
+A = [
+    [1.1, 2.2],
+    [-3.3, 4.4],
+]
+x = [5.5, 6.6]
+y = np.dot(A, x)
+print(y)
+
+key_length = 128
 params, pk, sk = dyn_elgamal.keygen(key_length)
+print(pk)
+print(sk)
 
-print("")
-print("pk =", pk)
-print("sk =", sk)
+s = 0.01
+A_enc = dyn_elgamal.enc(params, pk, A, s)
 
-print("")
-print("x =", x := 1.23)
-print("pt_x = encode(x) =", pt_x := dyn_elgamal.encode(params, x, delta))
-print("ct_x = encrypt(pt_x) =", ct_x := dyn_elgamal.encrypt(params, pk, pt_x))
-print("decrypt(ct_x) =", dyn_elgamal.decrypt(params, sk, ct_x))
-print("decode(pt_x) ≈", dyn_elgamal.decode(params, pt_x, delta))
+pk, sk, t = dyn_elgamal.update_key(params, pk, sk)
+x_enc = dyn_elgamal.enc(params, pk, x, s)
+print(pk)
+print(sk)
 
-pk, sk, token = dyn_elgamal.update_key(params, pk, sk)
-ct_x = dyn_elgamal.update_ct(params, ct_x, token)
+A_enc = dyn_elgamal.update_ct(params, A_enc, t)
+y_enc = dyn_elgamal.mult(params, A_enc, x_enc)
 
-print("")
-print("pk =", pk)
-print("sk =", sk)
-print("ct_x =", ct_x)
-
-print("")
-print("y =", y := -4.56)
-print("ct_y = encrypt(encode(y)) =", ct_y := dyn_elgamal.enc(params, pk, y, delta))
-print("decode(decrypt(ct_y)) ≈", dyn_elgamal.dec(params, sk, ct_y, delta))
-
-print("")
-print("ct_z = mult(ct_x, ct_y) =", ct_z := dyn_elgamal.mult(params, ct_x, ct_y))
-print("x * y ≈ decode(decrypt(ct_z)) =", dyn_elgamal.dec(params, sk, ct_z, delta**2))
-print("")
+y_ = dyn_elgamal.dec_add(params, sk, y_enc, s**2)
+print(y_)

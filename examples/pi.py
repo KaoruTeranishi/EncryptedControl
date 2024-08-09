@@ -39,38 +39,38 @@ sk: (
     | gsw_lwe.SecretKey
 )
 key_length: int
-security_params: tuple
+sec_params: tuple
 
 match scheme:
     case "elgamal":
         key_length = 64
-        delta = 0.001
+        s = 0.001
         params, pk, sk = elgamal.keygen(key_length)
 
     case "dyn_elgamal":
         key_length = 64
-        delta = 0.001
+        s = 0.001
         params, pk, sk = dyn_elgamal.keygen(key_length)
 
     case "paillier":
         key_length = 64
-        delta = 0.01
+        s = 0.01
         params, pk, sk = paillier.keygen(key_length)
 
     case "regev":
-        security_params = (10, pow(2, 32), pow(2, 64), 3.2)
-        delta = 0.001
-        params, pk, sk = regev.keygen(*security_params)
+        sec_params = (10, pow(2, 32), pow(2, 64), 3.2)
+        s = 0.001
+        params, pk, sk = regev.keygen(*sec_params)
 
     case "gsw":
-        security_params = (3, pow(2, 32), 3.2)
-        delta = 0.01
-        params, pk, sk = gsw.keygen(*security_params, 1)
+        sec_params = (3, pow(2, 32), 3.2)
+        s = 0.01
+        params, pk, sk = gsw.keygen(*sec_params, 1)
 
     case "gsw_lwe":
-        security_params = (10, pow(2, 20), pow(2, 32), 3.2)
-        delta = 0.01
-        params, pk, sk = gsw_lwe.keygen(*security_params)
+        sec_params = (10, pow(2, 20), pow(2, 32), 3.2)
+        s = 0.01
+        params, pk, sk = gsw_lwe.keygen(*sec_params)
 
     case _:
         raise UserWarning(
@@ -106,10 +106,10 @@ m = plant.B.shape[1]
 l = plant.C.shape[0]
 
 # sensor
-sensor = system.Sensor(scheme, params, pk, delta)
+sensor = system.Sensor(scheme, params, pk, s)
 
 # actuator
-actuator = system.Actuator(scheme, params, pk, sk, delta, delta**2)
+actuator = system.Actuator(scheme, params, pk, sk, s, s**2)
 
 # controller
 Kp = 10
@@ -126,10 +126,10 @@ xc0 = 0
 
 controller = system.Controller(Ac, Bc, Cc, Dc, Ec, Fc, xc0)
 
-encrypted_controller = system.EncryptedController(scheme, params, pk, controller, delta)
+encrypted_controller = system.EncryptedController(scheme, params, pk, controller, s)
 
 # operator
-operator = system.Operator(scheme, params, pk, delta)
+operator = system.Operator(scheme, params, pk, s)
 
 # input log data
 u = np.zeros([len(t), m])
@@ -165,7 +165,7 @@ for k in range(len(t)):
 
 
 plant.reset(x0)
-state_update = encrypted_controller.state
+xc_enc = encrypted_controller.state
 
 
 # simulation (encrypted)
@@ -180,12 +180,10 @@ for k in range(len(t)):
     y_[k] = plant.output
 
     # compute control input
-    state_update, u_enc[k] = encrypted_controller.get_enc_output(
-        y_enc[k], r_enc[k], state_update
-    )
+    xc_enc, u_enc[k] = encrypted_controller.get_enc_output(y_enc[k], r_enc[k], xc_enc)
 
     # state re-encryption
-    state_update = actuator.re_enc_state(state_update)
+    xc_enc = actuator.re_enc_state(xc_enc)
 
     # input control action
     actuator.set_enc_input(plant, u_enc[k])

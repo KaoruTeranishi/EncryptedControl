@@ -1,35 +1,22 @@
+import numpy as np
+
 from eclib import gsw_lwe
 
-security_params = (10, pow(2, 20), pow(2, 32), 3.2)
-delta = 0.01
-params, pk, sk = gsw_lwe.keygen(*security_params)
+A = [
+    [1.1, 2.2],
+    [-3.3, 4.4],
+]
+x = [5.5, 6.6]
+y = np.dot(A, x)
+print(y)
 
-print("")
-print("x =", x := 1.23)
-print("pt_x = encode(x) =", pt_x := gsw_lwe.encode(params, x, delta))
-print("ct_x = encrypt(pt_x) =\n", ct_x := gsw_lwe.encrypt(params, pk, pt_x))
-print("decrypt(ct_x) =", gsw_lwe.decrypt(params, sk, ct_x))
-print("decode(pt_x) ≈", gsw_lwe.decode(params, pt_x, delta))
+sec_params = (10, 2**32, 2**64, 3.2)
+params, pk, sk = gsw_lwe.keygen(*sec_params)
 
-print(
-    "gsw_ct_x = encryptGSW(pt_x) =\n",
-    gsw_ct_x := gsw_lwe.encrypt_gsw(params, pk, pt_x),
-)
-print("decrypt(gsw_ct_x) =", gsw_lwe.decrypt_gsw(params, sk, gsw_ct_x))
+s = 0.01
+A_enc = gsw_lwe.enc_gsw(params, pk, A, s)
+x_enc = gsw_lwe.enc(params, pk, x, s)
+y_enc = gsw_lwe.mult(params, A_enc, x_enc)
 
-print("")
-print("y =", y := -4.56)
-print("ct_y = encrypt(encode(y)) =\n", ct_y := gsw_lwe.enc(params, pk, y, delta))
-print("decode(decrypt(ct_y)) ≈", gsw_lwe.dec(params, sk, ct_y, delta))
-
-print("")
-print("ct_z = add(ct_x, ct_y) =\n", ct_z := gsw_lwe.add(params, ct_x, ct_y))
-print("x + y ≈ decode(decrypt(ct_z)) =", gsw_lwe.dec(params, sk, ct_z, delta))
-
-print("")
-print(
-    "ct_w = mult(gsw_ct_x, ct_y) =\n",
-    ct_w := gsw_lwe.mult(params, gsw_ct_x, ct_y),
-)
-print("x * y ≈ decode(decrypt(ct_w)) =", gsw_lwe.dec(params, sk, ct_w, delta**2))
-print("")
+y_ = gsw_lwe.dec(params, sk, y_enc, s**2)
+print(y_)

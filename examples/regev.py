@@ -1,22 +1,22 @@
+import numpy as np
+
 from eclib import regev
 
-security_params = (10, pow(2, 32), pow(2, 64), 3.2)
-delta = 0.01
-params, pk, sk = regev.keygen(*security_params)
+A = [
+    [1.1, 2.2],
+    [-3.3, 4.4],
+]
+x = [5.5, 6.6]
+y = np.dot(A, x)
+print(y)
 
-print("")
-print("x =", x := 1.23)
-print("pt_x = encode(x) =", pt_x := regev.encode(params, x, delta))
-print("ct_x = encrypt(pt_x) =\n", ct_x := regev.encrypt(params, pk, pt_x))
-print("decrypt(ct_x) =", regev.decrypt(params, sk, ct_x))
-print("decode(pt_x) ≈", regev.decode(params, pt_x, delta))
+sec_params = (10, 2**32, 2**64, 3.2)
+params, pk, sk = regev.keygen(*sec_params)
 
-print("")
-print("y =", y := -4.56)
-print("ct_y = encrypt(encode(y)) =\n", ct_y := regev.enc(params, pk, y, delta))
-print("decode(decrypt(ct_y)) ≈", regev.dec(params, sk, ct_y, delta))
+s = 0.01
+A_ecd = regev.encode(params, A, s)
+x_enc = regev.enc(params, pk, x, s)
+y_enc = regev.int_mult(params, A_ecd, x_enc)
 
-print("")
-print("ct_z = add(ct_x, ct_y) =\n", ct_z := regev.add(params, ct_x, ct_y))
-print("x + y ≈ decode(decrypt(ct_z)) =", regev.dec(params, sk, ct_z, delta))
-print("")
+y_ = regev.dec(params, sk, y_enc, s**2)
+print(y_)

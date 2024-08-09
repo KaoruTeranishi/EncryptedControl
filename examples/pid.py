@@ -2,7 +2,6 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
-from control.matlab import dlqr
 
 from eclib import dyn_elgamal, elgamal, figure, gsw, gsw_lwe, paillier, regev, system
 
@@ -96,20 +95,15 @@ B = [
     [0.0313],
     [0.0037],
 ]
-C = [
-    [1, 0],
-    [0, 1],
-]
-D = [
-    [0],
-    [0],
-]
+C = [0, 1]
+D = 0
 x0 = [-1, 2]
 
 plant = system.Plant(A, B, C, D, x0)
 
 n = plant.A.shape[0]
 m = plant.B.shape[1]
+l = plant.C.shape[0]
 
 # sensor
 sensor = system.Sensor(scheme, params, pk, s)
@@ -118,35 +112,60 @@ sensor = system.Sensor(scheme, params, pk, s)
 actuator = system.Actuator(scheme, params, pk, sk, s, s**2)
 
 # controller
-K, _, _ = dlqr(plant.A, plant.B, np.eye(n), np.eye(m))
+Kp = 20
+Ki = 20
+Kd = 2
+Ts = 0.1
 
-Ac = 0
-Bc = [0, 0]
-Cc = 0
-Dc = -K
+Ac = [
+    [0, 0],
+    [0, 1],
+]
+Bc = [
+    [-1.0],
+    [-Ts],
+]
+Cc = [-Kd / Ts, Ki]
+Dc = -(Kp + Kd / Ts)
+Ec = [
+    [1.0],
+    [Ts],
+]
+Fc = Kp + Kd / Ts
+xc0 = [0, 0]
 
-controller = system.Controller(Ac, Bc, Cc, Dc)
+controller = system.Controller(Ac, Bc, Cc, Dc, Ec, Fc, xc0)
 
 encrypted_controller = system.EncryptedController(scheme, params, pk, controller, s)
 
-# state log data
-x = np.zeros([len(t), n])
-x_ = np.zeros([len(t), n])
-x_enc = np.zeros(len(t), dtype=object)
+# operator
+operator = system.Operator(scheme, params, pk, s)
 
 # input log data
 u = np.zeros([len(t), m])
 u_ = np.zeros([len(t), m])
 u_enc = np.zeros(len(t), dtype=object)
 
+# output log data
+y = np.zeros([len(t), l])
+y_ = np.zeros([len(t), l])
+y_enc = np.zeros(len(t), dtype=object)
+
+# reference log data
+r = np.zeros([len(t), l])
+r_enc = np.zeros(len(t), dtype=object)
+
 
 # simulation (unencrypted)
 for k in range(len(t)):
+    # reference
+    r[k] = 1
+
     # measure sensor data
-    x[k] = sensor.get_output(plant)
+    y[k] = sensor.get_output(plant)
 
     # compute control input
-    u[k] = controller.get_output(x[k])
+    u[k] = controller.get_output(y[k], r[k])
 
     # input control action
     actuator.set_input(plant, u[k])
@@ -156,18 +175,25 @@ for k in range(len(t)):
 
 
 plant.reset(x0)
+xc_enc = encrypted_controller.state
 
 
 # simulation (encrypted)
 for k in range(len(t)):
+    # encrypt reference
+    r_enc[k] = operator.get_enc_reference(r[k])
+
     # measure sensor data
-    x_enc[k] = sensor.get_enc_output(plant)
+    y_enc[k] = sensor.get_enc_output(plant)
 
     # logging
-    x_[k] = plant.state
+    y_[k] = plant.output
 
     # compute control input
-    _, u_enc[k] = encrypted_controller.get_enc_output(x_enc[k])
+    xc_enc, u_enc[k] = encrypted_controller.get_enc_output(y_enc[k], r_enc[k], xc_enc)
+
+    # state re-encryption
+    xc_enc = actuator.re_enc_state(xc_enc)
 
     # input control action
     actuator.set_enc_input(plant, u_enc[k])
@@ -192,10 +218,10 @@ plt.xlim(0, max(t) + 1)
 plt.legend(loc="lower right")
 
 plt.figure()
-plt.step(t, x_, linestyle="-", color=blue, linewidth=1.0, label=["encrypted", ""])
-plt.step(t, x, linestyle="--", color=orange, linewidth=1.0, label=["unencrypted", ""])
+plt.step(t, y_, linestyle="-", color=blue, linewidth=1.0, label="encrypted")
+plt.step(t, y, linestyle="--", color=orange, linewidth=1.0, label="unencrypted")
 plt.xlabel("Step")
-plt.ylabel(r"$x$")
+plt.ylabel(r"$y$")
 plt.xlim(0, max(t) + 1)
 plt.legend(loc="upper right")
 
